@@ -1206,11 +1206,11 @@
         </nav>
 
         <div class="header-actions">
-            <!-- Language Switcher: FIXED INVERSION BUG -->
-            <!-- Clicking 'தமிழ்' activates Tamil; clicking 'English' activates English -->
+            <!-- Language Switcher: Tamil, English, and Hindi -->
             <div class="lang-switch">
                 <button class="lang-btn active" id="btn-lang-ta" onclick="setLanguage('ta')">தமிழ்</button>
                 <button class="lang-btn" id="btn-lang-en" onclick="setLanguage('en')">English</button>
+                <button class="lang-btn" id="btn-lang-hi" onclick="setLanguage('hi')">हिन्दी</button>
             </div>
 
             <!-- Global Share Page Link Button -->
@@ -1641,6 +1641,44 @@
                 askPoemPlaceholder: "Ask a question specifically about this verse...",
                 btnAskPoem: "Ask",
                 copiedToast: "🔗 Shareable link copied to clipboard! Anyone can open this directly."
+            },
+            hi: {
+                brandSub: "शास्त्रीय तमिल साहित्य एआई",
+                navHome: "होम",
+                navExplore: "सभी काव्य",
+                navTk: "तिरुक्कुरल",
+                navHist: "इतिहास एवं सुरक्षित",
+                shareLabel: "साझा करें",
+                heroGreeting: "नमस्ते! 👋",
+                heroSubtitle: "आज आप क्या सीखना चाहते हैं? 7 प्रामाणिक शास्त्रीय तमिल ग्रंथों पर आधारित।",
+                askPlaceholder: "तमिल, अंग्रेज़ी या हिन्दी में प्रश्न पूछें (जैसे: तिरुक्कुरल मित्रता के बारे में क्या कहता है?)...",
+                btnAsk: "एआई से पूछें",
+                exploreLabel: "प्रामाणिक साहित्य संग्रह",
+                viewAll: "सभी देखें ➔",
+                recentLabel: "हाल के प्रश्न",
+                userGuest: "अतिथि / लॉगिन",
+                lblSangam: "संगम साहित्य (Sangam Literature)",
+                lblEpics: "तमिल महाकाव्य (Tamil Epics)",
+                exploreTitle: "शास्त्रीय साहित्य कोष",
+                exploreSub: "ताड़पत्र पांडुलिपि चित्रों के साथ 7 प्रामाणिक तमिल साहित्य के पदों का अन्वेषण करें।",
+                loadMore: "और पद लोड करें",
+                tabTkBrowse: "1,330 कुरल",
+                tabTkCompare: "कुरल तुलना विश्लेषण (Compare)",
+                tabTkQuiz: "छात्र परीक्षा अभ्यास (Quiz)",
+                compareTitle: "दो कुरल पदों की तुलना करें",
+                compareSub: "दो कुरल संख्याएं चुनकर उनके दार्शनिक अंतर और भावार्थ का विश्लेषण करें।",
+                btnCompare: "तुलना करें",
+                quizTitle: "छात्र तिरुक्कुरल प्रश्नोत्तरी",
+                quizSub: "परीक्षा की तैयारी के लिए तिरुक्कुरल पर आधारित अभ्यास प्रश्न।",
+                quizScorePrefix: "अंक: ",
+                histTitle: "प्रश्न इतिहास एवं सुरक्षित पद",
+                histSub: "आपके प्रश्न और सुरक्षित किए गए शास्त्रीय पद डेटाबेस में सुरक्षित रहते हैं।",
+                btnClearHist: "इतिहास साफ़ करें",
+                tabHistQ: "पूछे गए प्रश्न",
+                tabHistB: "सुरक्षित पद (Bookmarks)",
+                askPoemPlaceholder: "इस पद के बारे में कोई प्रश्न पूछें...",
+                btnAskPoem: "पूछें",
+                copiedToast: "🔗 साझा करने योग्य लिंक कॉपी हो गया! इसे किसी के साथ भी साझा किया जा सकता है।"
             }
         };
 
@@ -1782,12 +1820,14 @@
             document.body.removeChild(ta);
         }
 
-        // --- Language Toggle (FIXED INVERSION BUG — Requirement 2) ---
+        // --- Language Toggle: Tamil, English, Hindi ---
         function setLanguage(lang) {
             state.lang = lang;
             // Update button visual active state
             document.getElementById('btn-lang-ta').classList.toggle('active', lang === 'ta');
             document.getElementById('btn-lang-en').classList.toggle('active', lang === 'en');
+            const btnHi = document.getElementById('btn-lang-hi');
+            if (btnHi) btnHi.classList.toggle('active', lang === 'hi');
             
             // Re-apply language to every text in the app
             applyLanguage();
@@ -2032,8 +2072,10 @@
                         'Authorization': state.token ? `Bearer ${state.token}` : ''
                     },
                     body: JSON.stringify({
+                        question: q,
                         query: q,
-                        language: state.lang
+                        language: state.lang,
+                        top_k: 5
                     })
                 });
 
@@ -2062,7 +2104,7 @@
                     <div class="abstain-card">
                         <div class="abstain-icon">⚖️</div>
                         <div class="abstain-title">போதுமான இலக்கியச் சான்று கிடைக்கவில்லை (Abstention)</div>
-                        <div class="abstain-desc">${data.message || "I couldn't find sufficient evidence in the available 7 Tamil classical literature works."}</div>
+                        <div class="abstain-desc">${data.message || data.answer || "I couldn't find sufficient evidence in the available 7 Tamil classical literature works."}</div>
                     </div>
                 `;
                 return;
@@ -2134,6 +2176,13 @@
                             ${ev.meaning_english ? `
                                 <div class="meaning-subheading" style="margin-top:12px;">English Translation:</div>
                                 <div class="meaning-content" style="color:#57606A;">${ev.meaning_english}</div>
+                            ` : ''}
+                        ` : state.lang === 'hi' ? `
+                            <div class="meaning-subheading">हिन्दी भावार्थ / Hindi Explanation:</div>
+                            <div class="meaning-content" style="font-size:16px; color:#1F2937;">${data.answer}</div>
+                            ${ev.meaning_tamil ? `
+                                <div class="meaning-subheading" style="margin-top:12px;">தமிழ் உரை விளக்கம் / Tamil Meaning:</div>
+                                <div class="meaning-content" style="color:#57606A;">${ev.meaning_tamil}</div>
                             ` : ''}
                         ` : `
                             <div class="meaning-subheading">English Interpretation:</div>

@@ -28,6 +28,8 @@ from backend.engine import (
     answer_query,
     answer_poem_specific_query,
     get_db_connection,
+    search_corpus_hybrid,
+    make_citation,
     DB_PATH
 )
 from backend.auth import (
@@ -70,7 +72,17 @@ class QueryRequest(BaseModel):
     query: Optional[str] = None
     question: Optional[str] = None
     language: Optional[str] = "ta"
+    work: Optional[str] = None
     work_filter: Optional[str] = None
+    session_id: Optional[str] = None
+    top_k: Optional[int] = 5
+
+class RetrieveRequest(BaseModel):
+    query: Optional[str] = None
+    question: Optional[str] = None
+    work: Optional[str] = None
+    work_filter: Optional[str] = None
+    top_k: Optional[int] = 5
 
 class PoemQueryRequest(BaseModel):
     poem_id: str
@@ -114,19 +126,30 @@ def serve_index():
 # =====================================================================
 # 2. ASK-AI QUERY ENDPOINT (Contract §7.1)
 # =====================================================================
-@app.post("/api/query")
 @app.post("/query")
-def handle_query(req: QueryRequest, user: Optional[Dict[str, Any]] = Depends(get_user_from_header)):
+def handle_query_strict(req: QueryRequest, user: Optional[Dict[str, Any]] = Depends(get_user_from_header)):
     """
-    Core Ask-AI endpoint.
-    Retrieves evidence from the 7 works, performs confidence check,
-    and returns cited answer or honest abstention.
+    Standard Ask-AI Query Endpoint.
+    Strictly accepts ta, en, hi; rejects any other language with HTTP 400.
+    Strictly returns: {"supported": bool, "answer": str, "citations": list[str]}
     """
-    raw_q = req.question or req.query or ""
-    result = answer_query(raw_q, requested_lang=req.language, work_filter=req.work_filter)
+    if req.language not in ("ta", "en", "hi"):
+        raise HTTPException(status_code=400, detail="Invalid language. Supported languages: ta, en, hi")
+
+    raw_q = (req.question or req.query or "").strip()
+    wf = req.work or req.work_filter
+    top_k = req.top_k or 5
+
+    result = answer_query(
+        raw_q,
+        requested_lang=req.language,
+        work_filter=wf,
+        session_id=req.session_id,
+        top_k=top_k
+    )
 
     # Save to user history if logged in
-    if user and raw_q.strip():
+    if user and raw_q:
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -136,13 +159,65 @@ def handle_query(req: QueryRequest, user: Optional[Dict[str, Any]] = Depends(get
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?);
             """, (
                 user["id"],
-                raw_q.strip(),
+                raw_q,
                 result.get("answer") or result.get("message") or "Abstained",
                 f"{ev.get('work', '')} #{ev.get('verse_number', '')}" if ev else None,
                 ev.get("verse_id"),
                 ev.get("work"),
                 ev.get("confidence", 0.0),
-                result.get("language", "ta")
+                req.language
+            ))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"[!] Error saving history: {e}")
+
+    return {
+        "supported": result.get("supported", False),
+        "answer": result.get("answer", ""),
+        "citations": result.get("citations", [])
+    }
+
+
+@app.post("/api/query")
+def handle_query_api(req: QueryRequest, user: Optional[Dict[str, Any]] = Depends(get_user_from_header)):
+    """
+    Ask-AI endpoint for rich frontend UI.
+    Validates ta, en, hi; returns full object including evidence, palm-leaf motif metadata, and citations.
+    """
+    if req.language not in ("ta", "en", "hi"):
+        raise HTTPException(status_code=400, detail="Invalid language. Supported languages: ta, en, hi")
+
+    raw_q = (req.question or req.query or "").strip()
+    wf = req.work or req.work_filter
+    top_k = req.top_k or 5
+
+    result = answer_query(
+        raw_q,
+        requested_lang=req.language,
+        work_filter=wf,
+        session_id=req.session_id,
+        top_k=top_k
+    )
+
+    # Save to user history if logged in
+    if user and raw_q:
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            ev = result.get("evidence") or {}
+            cursor.execute("""
+                INSERT INTO history (user_id, question, answer, citation, verse_id, work, confidence, language)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+            """, (
+                user["id"],
+                raw_q,
+                result.get("answer") or result.get("message") or "Abstained",
+                f"{ev.get('work', '')} #{ev.get('verse_number', '')}" if ev else None,
+                ev.get("verse_id"),
+                ev.get("work"),
+                ev.get("confidence", 0.0),
+                req.language
             ))
             conn.commit()
             conn.close()
@@ -150,6 +225,53 @@ def handle_query(req: QueryRequest, user: Optional[Dict[str, Any]] = Depends(get
             print(f"[!] Error saving history: {e}")
 
     return result
+
+
+@app.get("/retrieve")
+@app.post("/retrieve")
+def handle_retrieve(
+    req: Optional[RetrieveRequest] = None,
+    query: Optional[str] = Query(None),
+    question: Optional[str] = Query(None),
+    work: Optional[str] = Query(None),
+    top_k: int = Query(5)
+):
+    """
+    Standalone RAG retrieval endpoint.
+    Retrieves top literature candidates with confidence scores and canonical citations.
+    """
+    q = ""
+    target_work = None
+    k = top_k
+    if req:
+        q = (req.question or req.query or "").strip()
+        target_work = req.work or req.work_filter
+        if req.top_k:
+            k = req.top_k
+    if not q:
+        q = (question or query or "").strip()
+        if work:
+            target_work = work
+
+    if not q:
+        return {"query": "", "results": []}
+
+    scored = search_corpus_hybrid(q, work_filter=target_work, top_k=k)
+    results = []
+    for rec, conf, reason in scored:
+        results.append({
+            "verse_id": rec["id"],
+            "work": rec["work"],
+            "chapter_name": rec.get("chapter_name"),
+            "verse_number": rec.get("verse_number"),
+            "text_tamil": rec.get("text_tamil"),
+            "explanation_tamil": rec.get("explanation_tamil"),
+            "explanation_english": rec.get("explanation_english"),
+            "citation": make_citation(rec["work"], rec.get("verse_number")),
+            "confidence": conf,
+            "reason": reason
+        })
+    return {"query": q, "results": results}
 
 
 @app.post("/api/poem-query")
@@ -184,6 +306,7 @@ def handle_poem_query(req: PoemQueryRequest, user: Optional[Dict[str, Any]] = De
 # =====================================================================
 # 3. LITERATURE EXPLORER & WORKS API (Page 2 & Page 3)
 # =====================================================================
+@app.get("/works")
 @app.get("/api/literature/works")
 def get_canonical_works():
     """Returns the 7 canonical works grouped into Sangam Literature & Epics."""
