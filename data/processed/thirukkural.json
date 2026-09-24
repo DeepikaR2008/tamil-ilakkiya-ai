@@ -1,0 +1,41 @@
+[
+  {
+    "id": "thirukkural_1",
+    "text": "அகர முதல எழுத்தெல்லாம் ஆதி\nபகவன் முதற்றே உலகு.",
+    "metadata": {
+      "work": "Thirukkural",
+      "section": "Aram",
+      "chapter_number": 1,
+      "chapter_name": "கடவுள் வாழ்த்து",
+      "verse_number": 1,
+      "poet": "திருவள்ளுவர்",
+      "literary_type": "Kural"
+    }
+  },
+  {
+    "id": "thirukkural_2",
+    "text": "கற்றதனால் ஆய பயன்கொல் வாலறிவன்\nநற்றாள் தொழாஅர் எனின்.",
+    "metadata": {
+      "work": "Thirukkural",
+      "section": "Aram",
+      "chapter_number": 1,
+      "chapter_name": "கடவுள் வாழ்த்து",
+      "verse_number": 2,
+      "poet": "திருவள்ளுவர்",
+      "literary_type": "Kural"
+    }
+  },
+  {
+    "id": "thirukkural_391",
+    "text": "கற்க கசடறக் கற்பவை கற்றபின்\nநிற்க அதற்குத் தக.",
+    "metadata": {
+      "work": "Thirukkural",
+      "section": "Porul",
+      "chapter_number": 40,
+      "chapter_name": "கல்வி",
+      "verse_number": 391,
+      "poet": "திருவள்ளுவர்",
+      "literary_type": "Kural"
+    }
+  }
+]

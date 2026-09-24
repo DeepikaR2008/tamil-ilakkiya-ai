@@ -1,0 +1,26 @@
+[
+  {
+    "id": "purananuru_1",
+    "text": "கண்ணி கார்நறுங் கொன்றை காமர்\nவண்ண மார்பிற் றாரும் கொன்றை\nஊர்தி வால்வெள் ளேறே சிறந்த\nசீர்கெழு கொடியும் அவ்வே றென்ப.",
+    "metadata": {
+      "work": "Purananuru",
+      "poem_number": 1,
+      "verse_number": 1,
+      "poet": "பாரதம் பாடிய பெருந்தேவனார்",
+      "thematic_category": "கடவுள் வாழ்த்து",
+      "literary_type": "Sangam Poem"
+    }
+  },
+  {
+    "id": "purananuru_182",
+    "text": "உண்டால் அம்ம இவ்வுலகம் இந்திரர்\nஅமிழ்தம் இயைவது ஆயினும் இனிதுஎனத்\nதமியர் உண்டலும் இலரே முனிவிலர்\nதுஞ்சலும் இலர்பிறர் அஞ்சுவது அஞ்சி.",
+    "metadata": {
+      "work": "Purananuru",
+      "poem_number": 182,
+      "verse_number": 182,
+      "poet": "கடலுள் மாய்ந்த இளம்பெருவழுதி",
+      "thematic_category": "பொதுவியல்",
+      "literary_type": "Sangam Poem"
+    }
+  }
+]

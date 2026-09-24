@@ -1,0 +1,2658 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamil Ilakkiya AI — தமிழ் செவ்விலக்கிய ஆய்வு</title>
+    
+    <!-- Google Fonts: Noto Sans Tamil & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=Cinzel:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #1B4332;
+            --primary-light: #2D6A4F;
+            --primary-dark: #081C15;
+            --accent-gold: #C9A227;
+            --accent-gold-light: #E9C46A;
+            --accent-gold-soft: #FFF9E6;
+            --cream-bg: #FAF8F5;
+            --parchment: #F4EBD9;
+            --card-bg: #FFFFFF;
+            --border: #E8E1D3;
+            --text-main: #1F2937;
+            --text-muted: #57606A;
+            --danger: #DC2626;
+            --success: #15803D;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 18px;
+            --shadow: 0 4px 20px -2px rgba(27, 67, 50, 0.08);
+            --shadow-lg: 0 10px 30px -4px rgba(27, 67, 50, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', 'Noto Sans Tamil', system-ui, -apple-system, sans-serif;
+            background-color: var(--cream-bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* --- HEADER & NAVIGATION --- */
+        .header {
+            background: linear-gradient(135deg, #1B4332 0%, #143527 100%);
+            color: #FFFFFF;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.18);
+            border-bottom: 2px solid var(--accent-gold);
+        }
+
+        .brand-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--accent-gold), #F4A261);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .brand-title {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            color: #FFFFFF;
+        }
+
+        .brand-subtitle {
+            font-size: 11px;
+            color: var(--accent-gold-light);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        /* Desktop Nav Bar */
+        .desktop-nav {
+            display: flex;
+            gap: 6px;
+            margin-right: 12px;
+        }
+
+        .nav-link {
+            color: #D8F3DC;
+            text-decoration: none;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+        /* Language Toggle Pill */
+        .lang-switch {
+            display: flex;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 30px;
+            padding: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .lang-btn {
+            border: none;
+            background: transparent;
+            color: #E2E8F0;
+            padding: 5px 13px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lang-btn.active {
+            background-color: var(--accent-gold);
+            color: var(--primary-dark);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+        }
+
+        .user-nav-btn {
+            background: rgba(255, 255, 255, 0.12);
+            color: #FFFFFF;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .user-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        /* --- MOBILE BOTTOM NAVIGATION --- */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #FFFFFF;
+            border-top: 1px solid var(--border);
+            padding: 8px 12px;
+            justify-content: space-around;
+            z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 600;
+            gap: 2px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .bottom-nav-item.active {
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .bottom-nav-item .icon {
+            font-size: 19px;
+        }
+
+        /* --- MAIN CONTAINER & PAGES --- */
+        .main-container {
+            max-width: 1040px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 24px 20px 80px 20px;
+            flex: 1;
+        }
+
+        .page-view {
+            display: none;
+        }
+
+        .page-view.active {
+            display: block;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- TRADITIONAL PALM-LEAF MOTIF STYLING --- */
+        .palm-leaf-card-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: linear-gradient(135deg, #FAF1DF 0%, #F5E5C9 100%);
+            border: 1px solid #E6D2B5;
+            border-left: 5px solid var(--accent-gold);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.6);
+        }
+
+        .motif-thumbnail {
+            width: 72px;
+            height: 72px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid var(--accent-gold);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            flex-shrink: 0;
+            background-color: #EBD5B3;
+        }
+
+        .motif-info {
+            flex: 1;
+        }
+
+        .motif-tag {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #8C5311;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .motif-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .motif-subtitle {
+            font-size: 12px;
+            color: #715538;
+        }
+
+        /* Action Buttons on Verses */
+        .btn-action-pill {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+
+        .btn-action-pill:hover {
+            background: var(--primary);
+            color: #FFFFFF;
+            border-color: var(--primary);
+        }
+
+        /* --- PAGE 1: AUTH / LOGIN VIEW --- */
+        .auth-card {
+            max-width: 440px;
+            margin: 40px auto;
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+        }
+
+        .auth-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .auth-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 13px;
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-outline {
+            width: 100%;
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 11px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+
+        .btn-outline:hover {
+            background: rgba(27, 67, 50, 0.05);
+        }
+
+        .auth-toggle-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .auth-toggle-link a {
+            color: var(--primary);
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* --- PAGE 2: HOMEPAGE VIEW --- */
+        .hero-banner {
+            background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%);
+            border-radius: var(--radius-lg);
+            padding: 40px 32px;
+            color: #FFFFFF;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .hero-banner::after {
+            content: "தமிழ்";
+            position: absolute;
+            right: 20px;
+            bottom: -20px;
+            font-size: 140px;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.04);
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        .hero-greeting {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hero-subtitle {
+            font-size: 16px;
+            color: var(--accent-gold-light);
+            margin-bottom: 24px;
+            max-width: 650px;
+        }
+
+        /* Search / Ask Bar with Mic */
+        .ask-bar-wrapper {
+            position: relative;
+            background: #FFFFFF;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            padding: 6px 8px 6px 16px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+        }
+
+        .ask-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            font-family: inherit;
+            color: var(--text-main);
+            padding: 8px 0;
+        }
+
+        .mic-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 8px 12px;
+            font-size: 20px;
+            transition: color 0.2s;
+            border-radius: 50%;
+        }
+
+        .mic-btn:hover {
+            color: var(--primary);
+            background: #F3F4F6;
+        }
+
+        .mic-btn.listening {
+            color: var(--danger);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
+        .ask-submit-btn {
+            background: var(--accent-gold);
+            color: var(--primary-dark);
+            border: none;
+            padding: 10px 22px;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ask-submit-btn:hover {
+            background: var(--accent-gold-light);
+        }
+
+        /* Canonical Works Section */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 21px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .group-label {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent-gold);
+            margin: 22px 0 10px 0;
+            display: block;
+        }
+
+        .works-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .work-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .work-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent-gold);
+        }
+
+        .work-card-img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #E6D7C3;
+        }
+
+        .work-card-badge {
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--accent-gold-soft);
+            color: #854D0E;
+            padding: 3px 8px;
+            border-radius: 12px;
+            align-self: flex-start;
+        }
+
+        .work-card-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .work-card-count {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Recent Queries */
+        .recent-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-top: 24px;
+        }
+
+        .recent-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #F3F4F6;
+            cursor: pointer;
+        }
+
+        .recent-item:last-child {
+            border-bottom: none;
+        }
+
+        .recent-item:hover .recent-q {
+            color: var(--primary);
+        }
+
+        .recent-q {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .recent-citation {
+            font-size: 12px;
+            font-weight: 600;
+            background: #E8F5E9;
+            color: var(--primary);
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+
+        /* --- EVIDENCE-FIRST ANSWER CARD (§5.3) --- */
+        .answer-result-area {
+            margin-top: 24px;
+            display: none;
+        }
+
+        .answer-result-area.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .evidence-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .evidence-card-header {
+            background: #F4F7F5;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .confidence-meter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .confidence-bar-bg {
+            width: 90px;
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .confidence-bar-fill {
+            height: 100%;
+            background: #10B981;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* 5-Block Stacked Response */
+        .block-plain-answer {
+            background: #FDFBF7;
+            padding: 22px 24px;
+            border-bottom: 1px solid var(--border);
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-main);
+            white-space: pre-wrap;
+        }
+
+        .block-evidence {
+            background: #FFFFFF;
+            padding: 22px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pure-verse-text {
+            font-size: 19px;
+            font-weight: 700;
+            color: #064E3B;
+            line-height: 2;
+            padding: 18px;
+            background: #F0FDF4;
+            border-radius: var(--radius-sm);
+            border-left: 5px solid var(--primary);
+            margin: 12px 0;
+            white-space: pre-wrap;
+            letter-spacing: 0.01em;
+        }
+
+        .verse-translit {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .evidence-reason {
+            font-size: 13px;
+            color: #047857;
+            font-weight: 600;
+        }
+
+        .block-meaning {
+            padding: 20px 24px;
+            background: #F9FAFB;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .meaning-subheading {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .meaning-content {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        .block-source {
+            padding: 16px 24px;
+            background: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .source-tag {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .btn-view-context {
+            background: var(--primary);
+            color: #FFFFFF;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-view-context:hover {
+            background: var(--primary-light);
+        }
+
+        .related-chips-area {
+            padding: 14px 24px;
+            background: #FAF8F5;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .related-chip {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .related-chip:hover {
+            background: var(--primary);
+            color: #FFFFFF;
+        }
+
+        /* Abstain Card */
+        .abstain-card {
+            background: #FFFBEB;
+            border: 1px solid #FDE68A;
+            border-radius: var(--radius-md);
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .abstain-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .abstain-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #92400E;
+            margin-bottom: 6px;
+        }
+
+        .abstain-desc {
+            font-size: 14px;
+            color: #78350F;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* --- PAGE 3: ALL POEMS EXPLORER --- */
+        .explorer-header {
+            margin-bottom: 20px;
+        }
+
+        .filter-chips {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-top: 14px;
+        }
+
+        .filter-chip {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .filter-chip.active {
+            background: var(--primary);
+            color: #FFFFFF;
+            border-color: var(--primary);
+        }
+
+        .poem-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 22px;
+            margin-bottom: 22px;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .poem-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .poem-ref-badge {
+            font-size: 13px;
+            font-weight: 700;
+            background: #ECFDF5;
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .poem-author {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .poem-actions-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .poem-tamil-box {
+            font-size: 19px;
+            font-weight: 700;
+            line-height: 2.1;
+            color: var(--text-main);
+            padding: 16px 20px;
+            background: #FAF8F5;
+            border-radius: var(--radius-sm);
+            margin-bottom: 14px;
+            white-space: pre-wrap;
+            border-left: 4px solid var(--accent-gold);
+        }
+
+        .poem-exp-tamil {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #1F2937;
+            margin-bottom: 10px;
+            padding-left: 12px;
+            border-left: 3px solid var(--accent-gold);
+        }
+
+        .poem-exp-english {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #4B5563;
+            margin-bottom: 16px;
+            padding-left: 12px;
+            border-left: 3px solid #CBD5E1;
+        }
+
+        .poem-qa-area {
+            background: #F9FAFB;
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            margin-top: 14px;
+        }
+
+        .poem-qa-input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .poem-qa-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            outline: none;
+        }
+
+        .poem-qa-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* --- PAGE 4: THIRUKKURAL DEDICATED PAGE --- */
+        .tk-tab-nav {
+            display: flex;
+            gap: 12px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .tk-tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 18px;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tk-tab-btn.active {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .compare-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .compare-inputs {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .compare-side-by-side {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .compare-card {
+            background: #FAF8F5;
+            border-radius: var(--radius-md);
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .compare-analysis {
+            grid-column: 1 / -1;
+            background: #EFF6FF;
+            border: 1px solid #BFDBFE;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            color: #1E3A8A;
+            line-height: 1.7;
+        }
+
+        /* Quiz Module */
+        .quiz-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .quiz-q {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .quiz-opt {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: #F9FAFB;
+            border: 1px solid var(--border);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-opt:hover {
+            background: #F3F4F6;
+        }
+
+        .quiz-opt.correct {
+            background: #DCFCE7;
+            border-color: #22C55E;
+            color: #15803D;
+            font-weight: 700;
+        }
+
+        .quiz-opt.wrong {
+            background: #FEE2E2;
+            border-color: #EF4444;
+            color: #B91C1C;
+        }
+
+        .quiz-feedback {
+            margin-top: 12px;
+            font-size: 13px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        /* --- PAGE 5: HISTORY & SAVED --- */
+        .history-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow);
+        }
+
+        .history-q {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .history-ans {
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .history-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Toast Notification */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1B4332;
+            color: #FFFFFF;
+            padding: 12px 22px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            z-index: 9999;
+            display: none;
+            border: 1px solid var(--accent-gold);
+            animation: fadeIn 0.2s ease;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 768px) {
+            .desktop-nav {
+                display: none;
+            }
+
+            .bottom-nav {
+                display: flex;
+            }
+
+            .compare-side-by-side {
+                grid-template-columns: 1fr;
+            }
+
+            .main-container {
+                padding-bottom: 90px;
+            }
+
+            .hero-greeting {
+                font-size: 22px;
+            }
+
+            .motif-thumbnail {
+                width: 56px;
+                height: 56px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP HEADER -->
+    <header class="header">
+        <a class="brand-area" onclick="navigate('home')">
+            <div class="brand-icon">📜</div>
+            <div>
+                <div class="brand-title">Tamil Ilakkiya AI</div>
+                <div class="brand-subtitle" id="brand-sub-label">தமிழ் செவ்விலக்கிய ஆய்வு</div>
+            </div>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav class="desktop-nav">
+            <a class="nav-link" id="nav-home" onclick="navigate('home')">முகப்பு</a>
+            <a class="nav-link" id="nav-explore" onclick="navigate('explore')">அனைத்துப் பாடல்கள்</a>
+            <a class="nav-link" id="nav-thirukkural" onclick="navigate('thirukkural')">திருக்குறள்</a>
+            <a class="nav-link" id="nav-history" onclick="navigate('history')">வரலாறு & சேமிப்பு</a>
+        </nav>
+
+        <div class="header-actions">
+            <!-- Language Switcher: FIXED INVERSION BUG -->
+            <!-- Clicking 'தமிழ்' activates Tamil; clicking 'English' activates English -->
+            <div class="lang-switch">
+                <button class="lang-btn active" id="btn-lang-ta" onclick="setLanguage('ta')">தமிழ்</button>
+                <button class="lang-btn" id="btn-lang-en" onclick="setLanguage('en')">English</button>
+            </div>
+
+            <!-- Global Share Page Link Button -->
+            <button class="btn-action-pill" style="background:rgba(255,255,255,0.15); color:#FFF; border-color:rgba(255,255,255,0.3);" onclick="copyCurrentShareLink()" title="Copy Shareable Link">
+                <span>🔗</span>
+                <span id="share-header-label">பகிர்</span>
+            </button>
+
+            <!-- User Auth Status Button -->
+            <button class="user-nav-btn" id="user-header-btn" onclick="handleUserNavClick()">
+                <span id="user-display-label">விருந்தினர் / உள்நுழைக</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN BODY CONTAINER -->
+    <main class="main-container">
+
+        <!-- ========================================== -->
+        <!-- PAGE 1: LOGIN & AUTH                       -->
+        <!-- ========================================== -->
+        <section id="page-login" class="page-view">
+            <div class="auth-card">
+                <h2 class="auth-title" id="auth-title-text">வருக / Welcome Back</h2>
+                <p class="auth-subtitle" id="auth-sub-text">உள்நுழைந்து வினாக்கள் கேட்கவும், வரலாற்றுத் தரவுகளைச் சேமிக்கவும்</p>
+
+                <div id="auth-error-box" style="display:none; background:#FEE2E2; color:#B91C1C; padding:10px; border-radius:6px; font-size:13px; margin-bottom:14px;"></div>
+
+                <div class="form-group" id="group-name" style="display: none;">
+                    <label id="lbl-auth-name">உங்கள் பெயர் / Your Name</label>
+                    <input type="text" id="auth-name" class="form-control" placeholder="Deepika">
+                </div>
+
+                <div class="form-group">
+                    <label id="lbl-auth-email">மின்னஞ்சல் / Email Address</label>
+                    <input type="email" id="auth-email" class="form-control" placeholder="user@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label id="lbl-auth-password">கடவுச்சொல் / Password</label>
+                    <input type="password" id="auth-password" class="form-control" placeholder="••••••••">
+                </div>
+
+                <button class="btn-primary" id="btn-auth-submit" onclick="submitAuth()">உள்நுழைக / Log In</button>
+                <button class="btn-outline" id="btn-auth-guest" onclick="proceedAsGuest()">விருந்தினராகத் தொடர்க / Browse as Guest</button>
+
+                <div class="auth-toggle-link" id="auth-toggle-area">
+                    கணக்கு இல்லையா? <a onclick="toggleAuthMode('signup')">இங்கே பதிவு செய்க (Sign Up)</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- PAGE 2: HOMEPAGE (Core Vanakkam & Ask)     -->
+        <!-- ========================================== -->
+        <section id="page-home" class="page-view active">
+            <!-- Hero Banner -->
+            <div class="hero-banner">
+                <h1 class="hero-greeting" id="hero-greeting-text">வணக்கம்! 👋</h1>
+                <p class="hero-subtitle" id="hero-subtitle-text">இன்று நீங்கள் என்ன கற்க விரும்புகிறீர்கள்? 7 மூல செவ்வியல் இலக்கிய நூல்களின் சான்றுடன்.</p>
+
+                <!-- Ask-AI Search Bar with Voice Input -->
+                <div class="ask-bar-wrapper">
+                    <input type="text" id="home-ask-input" class="ask-input" placeholder="தமிழ் அல்லது ஆங்கிலத்தில் ஏதேனும் கேளுங்கள் (எ.கா. நட்பு என்றால் என்ன?)...">
+                    <button class="mic-btn" id="voice-mic-btn" title="Voice Input (Tamil/English)" onclick="toggleVoiceInput()">🎙️</button>
+                    <button class="ask-submit-btn" onclick="submitHomeAsk()">
+                        <span id="btn-ask-label">கேள்வி கேட்க</span> ➔
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live Evidence Result Area (§5.3) -->
+            <div id="home-answer-area" class="answer-result-area"></div>
+
+            <!-- Canonical Works Collections -->
+            <div class="section-header">
+                <h2 class="section-title" id="explore-header-text">செவ்வியல் இலக்கியத் தொகுப்புகள்</h2>
+                <a onclick="navigate('explore')" style="color:var(--primary); font-size:14px; font-weight:700; cursor:pointer;" id="link-view-all">அனைத்தும் காண்க ➔</a>
+            </div>
+
+            <span class="group-label" id="lbl-sangam-group">சங்க இலக்கியம் (Sangam Literature)</span>
+            <div class="works-grid">
+                <div class="work-card" onclick="openWork('Thirukkural')">
+                    <img src="/static/images/thirukkural.jpg" class="work-card-img" alt="Thirukkural Manuscript">
+                    <span class="work-card-badge">அறம் & தத்துவம்</span>
+                    <h3 class="work-card-title">திருக்குறள் (Thirukkural)</h3>
+                    <p class="work-card-count">1,330 குறள்கள் · 133 அதிகாரங்கள்</p>
+                </div>
+                <div class="work-card" onclick="openWork('Purananuru')">
+                    <img src="/static/images/sangam.jpg" class="work-card-img" alt="Purananuru Sangam Art">
+                    <span class="work-card-badge">வீரம் & கொடை</span>
+                    <h3 class="work-card-title">புறநானூறு (Purananuru)</h3>
+                    <p class="work-card-count">388 செவ்வியல் பாடல்கள்</p>
+                </div>
+                <div class="work-card" onclick="openWork('Akananuru')">
+                    <img src="/static/images/sangam.jpg" class="work-card-img" alt="Akananuru Art">
+                    <span class="work-card-badge">அகவாழ்வு & காதல்</span>
+                    <h3 class="work-card-title">அகநானூறு (Akananuru)</h3>
+                    <p class="work-card-count">400 சங்கப் பாடல்கள்</p>
+                </div>
+                <div class="work-card" onclick="openWork('Natrinai')">
+                    <img src="/static/images/sangam.jpg" class="work-card-img" alt="Natrinai Art">
+                    <span class="work-card-badge">திணை வாழ்வியல்</span>
+                    <h3 class="work-card-title">நற்றிணை (Natrinai)</h3>
+                    <p class="work-card-count">396 சங்கப் பாடல்கள்</p>
+                </div>
+                <div class="work-card" onclick="openWork('Kuruntokai')">
+                    <img src="/static/images/sangam.jpg" class="work-card-img" alt="Kuruntokai Art">
+                    <span class="work-card-badge">இனிய காதல் கவிதைகள்</span>
+                    <h3 class="work-card-title">குறுந்தொகை (Kuruntokai)</h3>
+                    <p class="work-card-count">400 சங்கப் பாடல்கள்</p>
+                </div>
+            </div>
+
+            <span class="group-label" id="lbl-epics-group">தமிழ் காப்பியங்கள் (Tamil Epics)</span>
+            <div class="works-grid">
+                <div class="work-card" onclick="openWork('Silappathikaram')">
+                    <img src="/static/images/silappathikaram.jpg" class="work-card-img" alt="Silappathikaram Golden Anklet">
+                    <span class="work-card-badge">பெருங்காப்பியம்</span>
+                    <h3 class="work-card-title">சிலப்பதிகாரம் (Silappathikaram)</h3>
+                    <p class="work-card-count">புகார்க் காண்டம் முழுமை</p>
+                </div>
+                <div class="work-card" onclick="openWork('Manimekalai')">
+                    <img src="/static/images/manimekalai.jpg" class="work-card-img" alt="Manimekalai Amudhasurabi">
+                    <span class="work-card-badge">அறக் காப்பியம்</span>
+                    <h3 class="work-card-title">மணிமேகலை (Manimekalai)</h3>
+                    <p class="work-card-count">493 காதை & பாடல் பகுதிகள்</p>
+                </div>
+            </div>
+
+            <!-- Recent Queries List -->
+            <div class="recent-box">
+                <h3 style="font-size:16px; font-weight:700; color:var(--primary); margin-bottom:12px;" id="recent-queries-label">சமீபத்திய வினாக்கள்</h3>
+                <div id="recent-queries-list">
+                    <div class="recent-item" onclick="runPresetQuery('நட்பு என்றால் என்ன?')">
+                        <span class="recent-q">நட்பு என்றால் என்ன?</span>
+                        <span class="recent-citation">குறள்: 781</span>
+                    </div>
+                    <div class="recent-item" onclick="runPresetQuery('கற்க கசடறக் கற்பவை')">
+                        <span class="recent-q">கல்வி பற்றி திருவள்ளுவர்</span>
+                        <span class="recent-citation">குறள்: 391</span>
+                    </div>
+                    <div class="recent-item" onclick="runPresetQuery('யாதும் ஊரே யாவரும் கேளிர்')">
+                        <span class="recent-q">யாதும் ஊரே யாவரும் கேளிர்</span>
+                        <span class="recent-citation">புறநானூறு: 192</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- PAGE 3: ALL POEMS EXPLORER                 -->
+        <!-- ========================================== -->
+        <section id="page-explore" class="page-view">
+            <div class="explorer-header">
+                <h2 class="section-title" id="explore-page-title">செவ்வியல் இலக்கியப் பெட்டகம்</h2>
+                <p style="font-size:14px; color:var(--text-muted); margin-top:4px;" id="explore-page-sub">7 மூல செவ்வியல் தமிழ் இலக்கியப் பாடல்களை ஏட்டுச் சுவடிச் சித்திரங்களுடன் ஆய்க.</p>
+                
+                <div style="display:flex; gap:10px; margin-top:14px;">
+                    <input type="text" id="explorer-search" class="form-control" placeholder="பாடல் எண், சொல் அல்லது பொருளைத் தேடுக..." oninput="debounceSearch()">
+                </div>
+
+                <div class="filter-chips">
+                    <button class="filter-chip active" onclick="setWorkFilter('All', this)">அனைத்தும் / All</button>
+                    <button class="filter-chip" onclick="setWorkFilter('Thirukkural', this)">திருக்குறள்</button>
+                    <button class="filter-chip" onclick="setWorkFilter('Purananuru', this)">புறநானூறு</button>
+                    <button class="filter-chip" onclick="setWorkFilter('Akananuru', this)">அகநானூறு</button>
+                    <button class="filter-chip" onclick="setWorkFilter('Natrinai', this)">நற்றிணை</button>
+                    <button class="filter-chip" onclick="setWorkFilter('Kuruntokai', this)">குறுந்தொகை</button>
+                    <button class="filter-chip" onclick="setWorkFilter('Silappathikaram', this)">சிலப்பதிகாரம்</button>
+                    <button class="filter-chip" onclick="setWorkFilter('Manimekalai', this)">மணிமேகலை</button>
+                </div>
+            </div>
+
+            <div id="poems-list-container">
+                <!-- Dynamically rendered poem cards -->
+            </div>
+
+            <div style="text-align:center; margin-top:20px;">
+                <button class="btn-outline" style="max-width:240px; margin:0 auto;" id="btn-load-more" onclick="loadMorePoems()">மேலும் பாடல்களைக் காண்க</button>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- PAGE 4: THIRUKKURAL DEDICATED PAGE         -->
+        <!-- ========================================== -->
+        <section id="page-thirukkural" class="page-view">
+            <div class="tk-tab-nav">
+                <button class="tk-tab-btn active" id="tab-btn-browse" onclick="setTkTab('browse')">1,330 குறள்கள்</button>
+                <button class="tk-tab-btn" id="tab-btn-compare" onclick="setTkTab('compare')">குறள் ஒப்பீட்டு ஆய்வு (Compare)</button>
+                <button class="tk-tab-btn" id="tab-btn-quiz" onclick="setTkTab('quiz')">மாணவர் தேர்வுப் பயிற்சி (Exam Quiz)</button>
+            </div>
+
+            <!-- Tab 1: Kural Browsing by Adhikaram -->
+            <div id="tk-subview-browse">
+                <div style="display:flex; gap:16px; align-items:center; margin-bottom:20px; flex-wrap:wrap;">
+                    <select id="tk-adhikaram-select" class="form-control" style="max-width:340px;" onchange="loadChapterKurals(this.value)">
+                        <!-- Populated with 133 Chapters -->
+                    </select>
+                    <span id="tk-adhikaram-info" style="font-size:14px; font-weight:700; color:var(--primary);"></span>
+                </div>
+                <div id="tk-kurals-container"></div>
+            </div>
+
+            <!-- Tab 2: Compare Tool -->
+            <div id="tk-subview-compare" style="display:none;">
+                <div class="compare-box">
+                    <h3 style="font-size:18px; font-weight:700; color:var(--primary); margin-bottom:8px;">இரண்டு குறள்களை ஒப்பிட்டு ஆராய்க</h3>
+                    <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">இரண்டு குறள்களின் எண்களைத் தேர்ந்தெடுத்து அவற்றின் நயத்தையும் வாழ்வியல் வேறுபாட்டையும் காண்க.</p>
+                    
+                    <div class="compare-inputs">
+                        <div>
+                            <label style="font-size:12px; font-weight:600;">குறள் எண் 1</label>
+                            <input type="number" id="cmp-kural1" class="form-control" value="1" min="1" max="1330" style="width:110px;">
+                        </div>
+                        <span style="font-weight:700; color:var(--text-muted); margin-top:20px;">VS</span>
+                        <div>
+                            <label style="font-size:12px; font-weight:600;">குறள் எண் 2</label>
+                            <input type="number" id="cmp-kural2" class="form-control" value="391" min="1" max="1330" style="width:110px;">
+                        </div>
+                        <button class="btn-primary" style="width:auto; margin-top:20px; padding:11px 22px;" onclick="runComparison()">ஒப்பிடுக</button>
+                    </div>
+
+                    <div id="compare-results-area" class="compare-side-by-side" style="display:none;">
+                        <!-- Injected side-by-side comparison cards -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Quiz Module -->
+            <div id="tk-subview-quiz" style="display:none;">
+                <div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h3 style="font-size:18px; font-weight:700; color:var(--primary);">மாணவர் திருக்குறள் வினாடி-வினா</h3>
+                        <p style="font-size:13px; color:var(--text-muted);">தேர்வுகளுக்குத் தயாராகும் மாணவர்களுக்கான அதிகாரப்பூர்வ பயிற்சி வினாக்கள்.</p>
+                    </div>
+                    <div style="font-size:16px; font-weight:700; color:var(--primary);" id="quiz-score-badge">மதிப்பெண்: 0 / 0</div>
+                </div>
+                <div id="quiz-cards-container"></div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- PAGE 5: USER HISTORY & BOOKMARKS           -->
+        <!-- ========================================== -->
+        <section id="page-history" class="page-view">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <h2 class="section-title" id="history-title-text">கேள்வி வரலாறு & சேமித்தவை</h2>
+                    <p style="font-size:13px; color:var(--text-muted);" id="history-sub-text">உங்கள் கேள்விகளும் நீங்கள் சேமித்த செவ்வியல் பாடல்களும் சர்வரில் நிலைத்து சேமிக்கப்படுகின்றன.</p>
+                </div>
+                <button class="btn-outline" style="width:auto; padding:8px 14px; font-size:13px; color:var(--danger); border-color:var(--danger);" onclick="clearUserHistory()" id="btn-clear-hist">வரலாற்றை நீக்குக</button>
+            </div>
+
+            <div class="tk-tab-nav">
+                <button class="tk-tab-btn active" id="hist-tab-queries" onclick="setHistTab('queries')">கேட்ட வினாக்கள்</button>
+                <button class="tk-tab-btn" id="hist-tab-bookmarks" onclick="setHistTab('bookmarks')">சேமித்தவை (Bookmarks)</button>
+            </div>
+
+            <div id="history-list-area"></div>
+        </section>
+
+    </main>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast"></div>
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+        <a class="bottom-nav-item active" id="bnav-home" onclick="navigate('home')">
+            <span class="icon">🏠</span>
+            <span id="bnav-lbl-home">முகப்பு</span>
+        </a>
+        <a class="bottom-nav-item" id="bnav-explore" onclick="navigate('explore')">
+            <span class="icon">📜</span>
+            <span id="bnav-lbl-explore">பாடல்கள்</span>
+        </a>
+        <a class="bottom-nav-item" id="bnav-thirukkural" onclick="navigate('thirukkural')">
+            <span class="icon">📖</span>
+            <span id="bnav-lbl-tk">திருக்குறள்</span>
+        </a>
+        <a class="bottom-nav-item" id="bnav-history" onclick="navigate('history')">
+            <span class="icon">👤</span>
+            <span id="bnav-lbl-hist">வரலாறு</span>
+        </a>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- CLIENT APPLICATION LOGIC                   -->
+    <!-- ========================================== -->
+    <script>
+        // Mapping of canonical works to their classical art motif illustrations
+        const WORK_ART_MOTIFS = {
+            'Thirukkural': {
+                img: '/static/images/thirukkural.jpg',
+                title: 'திருவள்ளுவர் அருளிய திருக்குறள்',
+                titleEn: 'Sage Thiruvalluvar — Thirukkural',
+                era: 'செவ்வியல் அற நூல் (Ethics & Philosophy)'
+            },
+            'Purananuru': {
+                img: '/static/images/sangam.jpg',
+                title: 'புறநானூறு — சங்கப் புலவர் பெருமக்கள்',
+                titleEn: 'Purananuru — Classical Sangam Anthology',
+                era: 'சங்க காலம் (Valor & Governance)'
+            },
+            'Akananuru': {
+                img: '/static/images/sangam.jpg',
+                title: 'அகநானூறு — நெஞ்சத்து அகக் கவிதைகள்',
+                titleEn: 'Akananuru — Sangam Love Poetry',
+                era: 'சங்க காலம் (Akam Anthology)'
+            },
+            'Natrinai': {
+                img: '/static/images/sangam.jpg',
+                title: 'நற்றிணை — ஐந்திணை வாழ்வியல்',
+                titleEn: 'Natrinai — Ancient Landscape & Emotion',
+                era: 'சங்க காலம் (Classical Anthologies)'
+            },
+            'Kuruntokai': {
+                img: '/static/images/sangam.jpg',
+                title: 'குறுந்தொகை — தமிழ்ப் பாணர் பாடல்',
+                titleEn: 'Kuruntokai — Lyrical Love Poetry',
+                era: 'சங்க காலம் (Sangam Lyric Poetry)'
+            },
+            'Silappathikaram': {
+                img: '/static/images/silappathikaram.jpg',
+                title: 'சிலப்பதிகாரம் — மாமதுரைக் கோயில் சிலம்பு',
+                titleEn: 'Silappathikaram — The Golden Anklet Epic',
+                era: 'இளங்கோவடிகள் அருளிய பெருங்காப்பியம்'
+            },
+            'Manimekalai': {
+                img: '/static/images/manimekalai.jpg',
+                title: 'மணிமேகலை — அமுதசுரபியும் அருளும்',
+                titleEn: 'Manimekalai — The Inexhaustible Bowl Epic',
+                era: 'சீத்தலைச் சாத்தனார் அருளிய காப்பியம்'
+            }
+        };
+
+        // --- State Management ---
+        const state = {
+            lang: 'ta', // 'ta' for Tamil, 'en' for English
+            user: null,
+            token: localStorage.getItem('ilakkiya_auth_token') || null,
+            currentPage: 'home',
+            currentWorkFilter: 'All',
+            poemsOffset: 0,
+            poemsLimit: 12,
+            cachedPoems: [],
+            isListening: false,
+            recognition: null,
+            authMode: 'login',
+            currentHistTab: 'queries'
+        };
+
+        // Full Comprehensive Bilingual Dictionary
+        const I18N = {
+            ta: {
+                brandSub: "தமிழ் செவ்விலக்கிய ஆய்வு",
+                navHome: "முகப்பு",
+                navExplore: "அனைத்துப் பாடல்கள்",
+                navTk: "திருக்குறள்",
+                navHist: "வரலாறு & சேமிப்பு",
+                shareLabel: "பகிர்",
+                heroGreeting: "வணக்கம்! 👋",
+                heroSubtitle: "இன்று நீங்கள் என்ன கற்க விரும்புகிறீர்கள்? 7 மூல செவ்வியல் இலக்கிய நூல்களின் சான்றுடன்.",
+                askPlaceholder: "தமிழ் அல்லது ஆங்கிலத்தில் ஏதேனும் கேளுங்கள் (எ.கா. நட்பு என்றால் என்ன?)...",
+                btnAsk: "கேள்வி கேட்க",
+                exploreLabel: "செவ்வியல் இலக்கியத் தொகுப்புகள்",
+                viewAll: "அனைத்தும் காண்க ➔",
+                recentLabel: "சமீபத்திய வினாக்கள்",
+                userGuest: "விருந்தினர் / உள்நுழைக",
+                lblSangam: "சங்க இலக்கியம் (Sangam Literature)",
+                lblEpics: "தமிழ் காப்பியங்கள் (Tamil Epics)",
+                exploreTitle: "செவ்வியல் இலக்கியப் பெட்டகம்",
+                exploreSub: "7 மூல செவ்வியல் தமிழ் இலக்கியப் பாடல்களை ஏட்டுச் சுவடிச் சித்திரங்களுடன் ஆய்க.",
+                loadMore: "மேலும் பாடல்களைக் காண்க",
+                tabTkBrowse: "1,330 குறள்கள்",
+                tabTkCompare: "குறள் ஒப்பீட்டு ஆய்வு (Compare)",
+                tabTkQuiz: "மாணவர் தேர்வுப் பயிற்சி (Exam Quiz)",
+                compareTitle: "இரண்டு குறள்களை ஒப்பிட்டு ஆராய்க",
+                compareSub: "இரண்டு குறள்களின் எண்களைத் தேர்ந்தெடுத்து அவற்றின் நயத்தையும் வாழ்வியல் வேறுபாட்டையும் காண்க.",
+                btnCompare: "ஒப்பிடுக",
+                quizTitle: "மாணவர் திருக்குறள் வினாடி-வினா",
+                quizSub: "தேர்வுகளுக்குத் தயாராகும் மாணவர்களுக்கான அதிகாரப்பூர்வ பயிற்சி வினாக்கள்.",
+                quizScorePrefix: "மதிப்பெண்: ",
+                histTitle: "கேள்வி வரலாறு & சேமித்தவை",
+                histSub: "உங்கள் கேள்விகளும் நீங்கள் சேமித்த செவ்வியல் பாடல்களும் சர்வரில் நிலைத்து சேமிக்கப்படுகின்றன.",
+                btnClearHist: "வரலாற்றை நீக்குக",
+                tabHistQ: "கேட்ட வினாக்கள்",
+                tabHistB: "சேமித்தவை (Bookmarks)",
+                askPoemPlaceholder: "இப்பாடல் குறித்து ஏதேனும் கேட்க...",
+                btnAskPoem: "கேட்க",
+                copiedToast: "🔗 இணைப்பு நகலெடுக்கப்பட்டது! இதை எவரிடமும் பகிரலாம்."
+            },
+            en: {
+                brandSub: "Classical Tamil Literature AI",
+                navHome: "Home",
+                navExplore: "All Poems",
+                navTk: "Thirukkural",
+                navHist: "History & Saved",
+                shareLabel: "Share",
+                heroGreeting: "Vanakkam! 👋",
+                heroSubtitle: "What would you like to learn today? Rooted in 7 canonical classical Tamil works.",
+                askPlaceholder: "Ask anything in Tamil or English (e.g. What does Thirukkural say on friendship?)...",
+                btnAsk: "Ask AI",
+                exploreLabel: "Explore Canonical Collections",
+                viewAll: "View All ➔",
+                recentLabel: "Recent Queries",
+                userGuest: "Guest / Login",
+                lblSangam: "Sangam Literature",
+                lblEpics: "Tamil Epics",
+                exploreTitle: "Classical Literature Explorer",
+                exploreSub: "Explore authentic verses across 7 canonical works with palm-leaf manuscript illustrations.",
+                loadMore: "Load More Verses",
+                tabTkBrowse: "1,330 Kurals",
+                tabTkCompare: "Kural Compare Tool",
+                tabTkQuiz: "Student Exam Quiz",
+                compareTitle: "Compare Two Kurals Side-by-Side",
+                compareSub: "Select or type two Kural numbers to analyze and understand how their meanings and context differ.",
+                btnCompare: "Compare",
+                quizTitle: "Student Exam Prep & Mastery Quiz",
+                quizSub: "Curated exam questions based on canonical Thirukkural verses.",
+                quizScorePrefix: "Score: ",
+                histTitle: "Search History & Saved Verses",
+                histSub: "Your queries and bookmarked classical passages are persisted server-side in database.",
+                btnClearHist: "Clear History",
+                tabHistQ: "Past Q&A History",
+                tabHistB: "Saved Bookmarks",
+                askPoemPlaceholder: "Ask a question specifically about this verse...",
+                btnAskPoem: "Ask",
+                copiedToast: "🔗 Shareable link copied to clipboard! Anyone can open this directly."
+            }
+        };
+
+        // --- Lifecycle Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initAuth();
+            initSpeech();
+            loadThirukkuralChapters();
+            applyLanguage();
+            loadPoems(true);
+
+            // Hash Router Support with Deep Links
+            window.addEventListener('hashchange', handleRoute);
+            handleRoute();
+        });
+
+        // --- Deep Link & Hash Router ---
+        function handleRoute() {
+            const rawHash = window.location.hash.replace('#/', '').replace('#', '') || 'home';
+            
+            // 1. Kural deep link: #/kural/391
+            if (rawHash.startsWith('kural/')) {
+                const kNum = parseInt(rawHash.split('/')[1]);
+                if (kNum && kNum >= 1 && kNum <= 1330) {
+                    navigate('thirukkural', false);
+                    const chNum = Math.ceil(kNum / 10);
+                    const sel = document.getElementById('tk-adhikaram-select');
+                    if (sel) {
+                        sel.value = chNum;
+                        loadChapterKurals(chNum, kNum);
+                    }
+                    return;
+                }
+            }
+
+            // 2. Poem deep link: #/poem/purananuru_192
+            if (rawHash.startsWith('poem/')) {
+                const poemId = rawHash.split('/')[1];
+                navigate('explore', false);
+                document.getElementById('explorer-search').value = poemId;
+                loadPoems(true);
+                return;
+            }
+
+            // 3. Ask deep link: #/ask?q=...
+            if (rawHash.startsWith('ask')) {
+                const urlParams = new URLSearchParams(rawHash.includes('?') ? rawHash.split('?')[1] : '');
+                const q = urlParams.get('q');
+                navigate('home', false);
+                if (q) {
+                    document.getElementById('home-ask-input').value = decodeURIComponent(q);
+                    submitHomeAsk();
+                }
+                return;
+            }
+
+            // Standard Page Navigation
+            if (['login', 'home', 'explore', 'thirukkural', 'history'].includes(rawHash)) {
+                navigate(rawHash, false);
+            }
+        }
+
+        function navigate(page, updateHash = true) {
+            state.currentPage = page;
+            if (updateHash) window.location.hash = '#/' + page;
+
+            // Page views toggle
+            document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+            const target = document.getElementById(`page-${page}`);
+            if (target) target.classList.add('active');
+
+            // Nav links active update
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            const navLink = document.getElementById(`nav-${page}`);
+            if (navLink) navLink.classList.add('active');
+
+            // Bottom nav update
+            document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+            const bNav = document.getElementById(`bnav-${page}`);
+            if (bNav) bNav.classList.add('active');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (page === 'history') {
+                loadUserHistory();
+            }
+        }
+
+        // --- Shareable Deep Link Generator (Requirement 3) ---
+        function copyCurrentShareLink() {
+            let shareUrl = window.location.origin + window.location.pathname;
+            if (state.currentPage === 'thirukkural') {
+                const sel = document.getElementById('tk-adhikaram-select');
+                const ch = sel ? sel.value : 1;
+                shareUrl += `#/kural/${(ch - 1) * 10 + 1}`;
+            } else if (state.currentPage === 'explore') {
+                const searchVal = document.getElementById('explorer-search').value.trim();
+                shareUrl += searchVal ? `#/poem/${encodeURIComponent(searchVal)}` : `#/explore`;
+            } else {
+                const q = document.getElementById('home-ask-input').value.trim();
+                shareUrl += q ? `#/ask?q=${encodeURIComponent(q)}` : `#/home`;
+            }
+            copyToClipboard(shareUrl);
+        }
+
+        function shareSpecificVerse(verseId, work, verseNum) {
+            let shareUrl = window.location.origin + window.location.pathname;
+            if (work === 'Thirukkural') {
+                shareUrl += `#/kural/${verseNum}`;
+            } else {
+                shareUrl += `#/poem/${verseId}`;
+            }
+            copyToClipboard(shareUrl);
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast(I18N[state.lang].copiedToast);
+                }).catch(() => fallbackCopy(text));
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast(I18N[state.lang].copiedToast);
+            } catch (err) {
+                prompt("Copy this shareable link:", text);
+            }
+            document.body.removeChild(ta);
+        }
+
+        // --- Language Toggle (FIXED INVERSION BUG — Requirement 2) ---
+        function setLanguage(lang) {
+            state.lang = lang;
+            // Update button visual active state
+            document.getElementById('btn-lang-ta').classList.toggle('active', lang === 'ta');
+            document.getElementById('btn-lang-en').classList.toggle('active', lang === 'en');
+            
+            // Re-apply language to every text in the app
+            applyLanguage();
+
+            // Re-render open poems to reflect preferred language ordering
+            if (state.currentPage === 'explore') {
+                loadPoems(true);
+            } else if (state.currentPage === 'thirukkural') {
+                const sel = document.getElementById('tk-adhikaram-select');
+                if (sel && sel.value) loadChapterKurals(sel.value);
+            }
+        }
+
+        function applyLanguage() {
+            const t = I18N[state.lang];
+            
+            // Header & Brand
+            document.getElementById('brand-sub-label').textContent = t.brandSub;
+            document.getElementById('nav-home').textContent = t.navHome;
+            document.getElementById('nav-explore').textContent = t.navExplore;
+            document.getElementById('nav-thirukkural').textContent = t.navTk;
+            document.getElementById('nav-history').textContent = t.navHist;
+            document.getElementById('share-header-label').textContent = t.shareLabel;
+
+            // Mobile nav
+            document.getElementById('bnav-lbl-home').textContent = t.navHome;
+            document.getElementById('bnav-lbl-explore').textContent = t.navExplore;
+            document.getElementById('bnav-lbl-tk').textContent = t.navTk;
+            document.getElementById('bnav-lbl-hist').textContent = t.navHist;
+
+            // Homepage Hero
+            document.getElementById('hero-greeting-text').textContent = t.heroGreeting;
+            document.getElementById('hero-subtitle-text').textContent = t.heroSubtitle;
+            document.getElementById('home-ask-input').placeholder = t.askPlaceholder;
+            document.getElementById('btn-ask-label').textContent = t.btnAsk;
+            document.getElementById('explore-header-text').textContent = t.exploreLabel;
+            document.getElementById('link-view-all').textContent = t.viewAll;
+            document.getElementById('recent-queries-label').textContent = t.recentLabel;
+            document.getElementById('lbl-sangam-group').textContent = t.lblSangam;
+            document.getElementById('lbl-epics-group').textContent = t.lblEpics;
+
+            // Explorer Page
+            document.getElementById('explore-page-title').textContent = t.exploreTitle;
+            document.getElementById('explore-page-sub').textContent = t.exploreSub;
+            document.getElementById('btn-load-more').textContent = t.loadMore;
+
+            // Thirukkural Page
+            document.getElementById('tab-btn-browse').textContent = t.tabTkBrowse;
+            document.getElementById('tab-btn-compare').textContent = t.tabTkCompare;
+            document.getElementById('tab-btn-quiz').textContent = t.tabTkQuiz;
+
+            // History Page
+            document.getElementById('history-title-text').textContent = t.histTitle;
+            document.getElementById('history-sub-text').textContent = t.histSub;
+            document.getElementById('btn-clear-hist').textContent = t.btnClearHist;
+            document.getElementById('hist-tab-queries').textContent = t.tabHistQ;
+            document.getElementById('hist-tab-bookmarks').textContent = t.tabHistB;
+
+            if (!state.user) {
+                document.getElementById('user-display-label').textContent = t.userGuest;
+            }
+        }
+
+        // --- Auth System ---
+        async function initAuth() {
+            if (!state.token) {
+                updateUserUI(null);
+                return;
+            }
+            try {
+                const res = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${state.token}` }
+                });
+                const data = await res.json();
+                if (data.authenticated) {
+                    state.user = data.user;
+                    updateUserUI(state.user);
+                } else {
+                    state.token = null;
+                    localStorage.removeItem('ilakkiya_auth_token');
+                    updateUserUI(null);
+                }
+            } catch (e) {
+                updateUserUI(null);
+            }
+        }
+
+        function updateUserUI(user) {
+            const label = document.getElementById('user-display-label');
+            if (user) {
+                label.textContent = `👤 ${user.name || user.email.split('@')[0]}`;
+            } else {
+                label.textContent = I18N[state.lang].userGuest;
+            }
+        }
+
+        function handleUserNavClick() {
+            if (state.user) {
+                if (confirm(`Logged in as ${state.user.email}. Do you want to Log Out? / வெளியேற வேண்டுமா?`)) {
+                    state.token = null;
+                    state.user = null;
+                    localStorage.removeItem('ilakkiya_auth_token');
+                    updateUserUI(null);
+                    showToast("Logged out successfully / வெளியேறியாச்சு.");
+                    navigate('home');
+                }
+            } else {
+                navigate('login');
+            }
+        }
+
+        function toggleAuthMode(mode) {
+            state.authMode = mode;
+            const title = document.getElementById('auth-title-text');
+            const sub = document.getElementById('auth-sub-text');
+            const nameGrp = document.getElementById('group-name');
+            const submitBtn = document.getElementById('btn-auth-submit');
+            const toggleArea = document.getElementById('auth-toggle-area');
+
+            if (mode === 'signup') {
+                title.textContent = state.lang === 'ta' ? "பதிவு செய்க / Sign Up" : "Create Account";
+                sub.textContent = state.lang === 'ta' ? "கணக்கு தொடங்கி வினாக்கள் கேட்கவும் வரலாற்றைச் சேமிக்கவும்" : "Sign up to ask questions, track history & save bookmarks";
+                nameGrp.style.display = "block";
+                submitBtn.textContent = state.lang === 'ta' ? "கணக்கு தொடங்கு / Sign Up" : "Sign Up";
+                toggleArea.innerHTML = state.lang === 'ta' ? `ஏற்கனவே கணக்கு உள்ளதா? <a onclick="toggleAuthMode('login')">இங்கே உள்நுழைக</a>` : `Already have an account? <a onclick="toggleAuthMode('login')">Log In here</a>`;
+            } else {
+                title.textContent = state.lang === 'ta' ? "வருக / Welcome Back" : "Welcome Back";
+                sub.textContent = state.lang === 'ta' ? "உள்நுழைந்து வினாக்கள் கேட்கவும், வரலாற்றுத் தரவுகளைச் சேமிக்கவும்" : "Log in to ask questions, track history & bookmarks";
+                nameGrp.style.display = "none";
+                submitBtn.textContent = state.lang === 'ta' ? "உள்நுழைக / Log In" : "Log In";
+                toggleArea.innerHTML = state.lang === 'ta' ? `கணக்கு இல்லையா? <a onclick="toggleAuthMode('signup')">இங்கே பதிவு செய்க (Sign Up)</a>` : `Don't have an account? <a onclick="toggleAuthMode('signup')">Sign Up here</a>`;
+            }
+        }
+
+        async function submitAuth() {
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value;
+            const name = document.getElementById('auth-name').value.trim();
+            const errorBox = document.getElementById('auth-error-box');
+            errorBox.style.display = 'none';
+
+            if (!email || !password) {
+                errorBox.textContent = "Please fill in all required fields / விவரங்களை நிரப்புக.";
+                errorBox.style.display = 'block';
+                return;
+            }
+
+            const endpoint = state.authMode === 'signup' ? '/api/auth/register' : '/api/auth/login';
+            const payload = state.authMode === 'signup' ? { email, password, name } : { email, password };
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    state.token = data.token;
+                    state.user = data.user;
+                    localStorage.setItem('ilakkiya_auth_token', data.token);
+                    updateUserUI(state.user);
+                    showToast(state.authMode === 'signup' ? "Account created! / கணக்கு தொடங்கப்பட்டது!" : "Logged in successfully! / உள்நுழைவு வெற்றி!");
+                    navigate('home');
+                } else {
+                    errorBox.textContent = data.message || "Authentication failed.";
+                    errorBox.style.display = 'block';
+                }
+            } catch (e) {
+                errorBox.textContent = "Server error occurred. Please check connection.";
+                errorBox.style.display = 'block';
+            }
+        }
+
+        function proceedAsGuest() {
+            showToast("Browsing in guest mode / விருந்தினர் முறை.");
+            navigate('home');
+        }
+
+        // --- Speech Recognition ---
+        function initSpeech() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                document.getElementById('voice-mic-btn').style.display = 'none';
+                return;
+            }
+            state.recognition = new SpeechRecognition();
+            state.recognition.continuous = false;
+            state.recognition.interimResults = false;
+
+            state.recognition.onresult = (e) => {
+                const transcript = e.results[0][0].transcript;
+                document.getElementById('home-ask-input').value = transcript;
+                stopVoiceInput();
+                submitHomeAsk();
+            };
+
+            state.recognition.onerror = () => stopVoiceInput();
+            state.recognition.onend = () => stopVoiceInput();
+        }
+
+        function toggleVoiceInput() {
+            if (!state.recognition) return;
+            if (state.isListening) {
+                stopVoiceInput();
+            } else {
+                state.recognition.lang = state.lang === 'ta' ? 'ta-IN' : 'en-US';
+                state.recognition.start();
+                state.isListening = true;
+                document.getElementById('voice-mic-btn').classList.add('listening');
+                showToast("Listening... பேசுங்கள்...");
+            }
+        }
+
+        function stopVoiceInput() {
+            if (state.recognition && state.isListening) {
+                state.recognition.stop();
+            }
+            state.isListening = false;
+            document.getElementById('voice-mic-btn').classList.remove('listening');
+        }
+
+        // --- Ask-AI Core Engine Connection ---
+        async function submitHomeAsk() {
+            const q = document.getElementById('home-ask-input').value.trim();
+            if (!q) return;
+
+            const area = document.getElementById('home-answer-area');
+            area.style.display = 'block';
+            area.innerHTML = `
+                <div style="background:#FFF; padding:24px; border-radius:14px; text-align:center; border:1px solid var(--border); box-shadow:var(--shadow);">
+                    <div style="font-size:26px; animation:spin 1s infinite linear;">🔎</div>
+                    <div style="font-size:15px; font-weight:700; color:var(--primary); margin-top:8px;">இலக்கிய சான்றுகளை ஆராய்கிறது... Retrieving evidence...</div>
+                </div>
+            `;
+
+            try {
+                const res = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': state.token ? `Bearer ${state.token}` : ''
+                    },
+                    body: JSON.stringify({
+                        query: q,
+                        language: state.lang
+                    })
+                });
+
+                const data = await res.json();
+                renderAnswerCard(data, area, q);
+            } catch (e) {
+                area.innerHTML = `
+                    <div class="abstain-card">
+                        <div class="abstain-title">இணைப்பில் பிழை / Connection Issue</div>
+                        <div class="abstain-desc">Could not connect to the retrieval engine. Please ensure backend is active.</div>
+                    </div>
+                `;
+            }
+        }
+
+        function runPresetQuery(q) {
+            document.getElementById('home-ask-input').value = q;
+            submitHomeAsk();
+            window.scrollTo({ top: 120, behavior: 'smooth' });
+        }
+
+        // --- Evidence-First Renderer (§5.3 with Traditional Motif & Share Link) ---
+        function renderAnswerCard(data, container, originalQuery) {
+            if (data.status === 'abstained' || !data.evidence) {
+                container.innerHTML = `
+                    <div class="abstain-card">
+                        <div class="abstain-icon">⚖️</div>
+                        <div class="abstain-title">போதுமான இலக்கியச் சான்று கிடைக்கவில்லை (Abstention)</div>
+                        <div class="abstain-desc">${data.message || "I couldn't find sufficient evidence in the available 7 Tamil classical literature works."}</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const ev = data.evidence;
+            const pct = Math.round(ev.confidence * 100);
+            const motifMeta = WORK_ART_MOTIFS[ev.work] || WORK_ART_MOTIFS['Thirukkural'];
+
+            // Shareable URL for this answer
+            const shareUrl = `${window.location.origin}${window.location.pathname}#/ask?q=${encodeURIComponent(originalQuery || ev.chapter)}`;
+
+            // Related chips
+            let relatedChipsHtml = '';
+            if (data.related_verses && data.related_verses.length > 0) {
+                relatedChipsHtml = `
+                    <div class="related-chips-area">
+                        <span style="font-size:12px; font-weight:700; color:var(--text-muted);">Related Verses:</span>
+                        ${data.related_verses.map(rv => `
+                            <span class="related-chip" onclick="openWork('${rv.work}', '${rv.verse_number}')">${rv.work} #${rv.verse_number}</span>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            container.innerHTML = `
+                <div class="evidence-card">
+                    <!-- Header with Confidence Meter -->
+                    <div class="evidence-card-header">
+                        <div style="font-size:14px; font-weight:800; color:var(--primary);">
+                            📖 ${ev.work} — ${ev.chapter} (${ev.verse_number ? 'Verse #' + ev.verse_number : ''})
+                        </div>
+                        <div class="confidence-meter">
+                            <span>${pct}% Evidence Match</span>
+                            <div class="confidence-bar-bg">
+                                <div class="confidence-bar-fill" style="width:${pct}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1. Plain Language Answer -->
+                    <div class="block-plain-answer">
+                        ${data.answer}
+                    </div>
+
+                    <!-- 2. Evidence Panel with Traditional Palm-Leaf Motif & Pure Verse -->
+                    <div class="block-evidence">
+                        <!-- Classical Palm-Leaf Art Motif -->
+                        <div class="palm-leaf-card-header">
+                            <img src="${motifMeta.img}" class="motif-thumbnail" alt="${ev.work} Palm-Leaf Artwork">
+                            <div class="motif-info">
+                                <span class="motif-tag">ஏட்டுச் சுவடிச் சான்று · Palm-Leaf Manuscript Evidence</span>
+                                <div class="motif-title">${ev.work} — ${ev.chapter}</div>
+                                <div class="motif-subtitle">${motifMeta.title}</div>
+                            </div>
+                        </div>
+
+                        <!-- Pure Classical Verse Text -->
+                        <div class="pure-verse-text">${ev.text_tamil}</div>
+                        ${ev.text_transliteration ? `<div class="verse-translit">${ev.text_transliteration}</div>` : ''}
+                        <div class="evidence-reason">Matched on: ${ev.match_reason || 'Canonical classical context match'}</div>
+                    </div>
+
+                    <!-- 3. Meaning Block -->
+                    <div class="block-meaning">
+                        ${state.lang === 'ta' ? `
+                            <div class="meaning-subheading">தமிழ் உரை விளக்கம் / Tamil Meaning:</div>
+                            <div class="meaning-content" style="font-size:16px;">${ev.meaning_tamil || 'செவ்வியல் உரை விளக்கம்.'}</div>
+                            ${ev.meaning_english ? `
+                                <div class="meaning-subheading" style="margin-top:12px;">English Translation:</div>
+                                <div class="meaning-content" style="color:#57606A;">${ev.meaning_english}</div>
+                            ` : ''}
+                        ` : `
+                            <div class="meaning-subheading">English Interpretation:</div>
+                            <div class="meaning-content" style="font-size:16px; color:#1F2937;">${ev.meaning_english || 'Classical translation.'}</div>
+                            ${ev.meaning_tamil ? `
+                                <div class="meaning-subheading" style="margin-top:12px;">தமிழ் உரை விளக்கம் / Tamil Meaning:</div>
+                                <div class="meaning-content" style="color:#57606A;">${ev.meaning_tamil}</div>
+                            ` : ''}
+                        `}
+                    </div>
+
+                    <!-- 4. Source Block, Bookmark & Share Buttons -->
+                    <div class="block-source">
+                        <div class="source-tag">
+                            🏛️ Author: <strong>${ev.poet || 'சங்கப் புலவர்'}</strong> | Canonical Work: <strong>${ev.work}</strong>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-action-pill" onclick="copyToClipboard('${shareUrl}')">🔗 Share Link</button>
+                            <button class="btn-action-pill" onclick="bookmarkVerse('${ev.verse_id}', '${ev.work}', '${ev.verse_number}')">🔖 Bookmark</button>
+                            <button class="btn-view-context" onclick="openWork('${ev.work}', '${ev.verse_number}')">View in Context ➔</button>
+                        </div>
+                    </div>
+
+                    <!-- 5. Related Verses Block -->
+                    ${relatedChipsHtml}
+                </div>
+            `;
+        }
+
+        // --- PAGE 3: ALL POEMS EXPLORER (With Traditional Art Motifs & Share Links) ---
+        async function loadPoems(reset = false) {
+            if (reset) {
+                state.poemsOffset = 0;
+                state.cachedPoems = [];
+                document.getElementById('poems-list-container').innerHTML = '';
+            }
+
+            const search = document.getElementById('explorer-search').value.trim();
+            const url = `/api/literature/poems?work=${encodeURIComponent(state.currentWorkFilter)}&search=${encodeURIComponent(search)}&limit=${state.poemsLimit}&offset=${state.poemsOffset}`;
+
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                state.poemsOffset += data.poems.length;
+
+                renderPoemCards(data.poems, reset);
+
+                const btnMore = document.getElementById('btn-load-more');
+                btnMore.style.display = state.poemsOffset < data.total ? 'block' : 'none';
+            } catch (e) {
+                console.error("Error loading poems", e);
+            }
+        }
+
+        function renderPoemCards(poems, reset) {
+            const container = document.getElementById('poems-list-container');
+            const isTamil = state.lang === 'ta';
+
+            const html = poems.map(p => {
+                const motifMeta = WORK_ART_MOTIFS[p.work] || WORK_ART_MOTIFS['Thirukkural'];
+                const shareUrl = `${window.location.origin}${window.location.pathname}#/${p.work === 'Thirukkural' ? 'kural/' + p.verse_number : 'poem/' + p.id}`;
+
+                return `
+                    <div class="poem-card" id="card-${p.id}">
+                        <!-- Top Metadata & Action Pills -->
+                        <div class="poem-card-top">
+                            <span class="poem-ref-badge">${p.work} · ${p.chapter_name || p.section} (Verse #${p.verse_number})</span>
+                            <div class="poem-actions-row">
+                                <span class="poem-author">✍️ ${p.poet || 'புலவர்'}</span>
+                                <button class="btn-action-pill" onclick="copyToClipboard('${shareUrl}')" title="Copy forwardable link">🔗 Share</button>
+                                <button class="btn-action-pill" onclick="bookmarkVerse('${p.id}', '${p.work}', '${p.verse_number}')">🔖 Save</button>
+                            </div>
+                        </div>
+
+                        <!-- Traditional Palm-Leaf Manuscript Art Motif alongside poem -->
+                        <div class="palm-leaf-card-header">
+                            <img src="${motifMeta.img}" class="motif-thumbnail" alt="${p.work} Palm-Leaf Artwork">
+                            <div class="motif-info">
+                                <span class="motif-tag">ஏட்டுச் சுவடி மரபுச் சித்திரம் · Palm-Leaf Art</span>
+                                <div class="motif-title">${isTamil ? motifMeta.title : motifMeta.titleEn}</div>
+                                <div class="motif-subtitle">${motifMeta.era}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Clean Pure Tamil Verse Text -->
+                        <div class="poem-tamil-box">${p.text_tamil}</div>
+
+                        <!-- Language Priority: Based on active language toggle -->
+                        ${isTamil ? `
+                            <div class="poem-exp-tamil">
+                                <strong>தமிழ் விளக்கம்:</strong> ${p.explanation_tamil || 'இலக்கிய உரை விளக்கம்.'}
+                            </div>
+                            ${p.explanation_english ? `
+                                <div class="poem-exp-english">
+                                    <strong>English Meaning:</strong> ${p.explanation_english}
+                                </div>
+                            ` : ''}
+                        ` : `
+                            <div class="poem-exp-english" style="font-size:15px; color:#1F2937; border-left-color:var(--accent-gold);">
+                                <strong>English Meaning:</strong> ${p.explanation_english || 'Classical verse translation.'}
+                            </div>
+                            ${p.explanation_tamil ? `
+                                <div class="poem-exp-tamil" style="border-left-color:#CBD5E1; color:#57606A;">
+                                    <strong>Tamil Explanation:</strong> ${p.explanation_tamil}
+                                </div>
+                            ` : ''}
+                        `}
+
+                        <!-- In-Context Poem Q&A Box -->
+                        <div class="poem-qa-area">
+                            <div class="poem-qa-input-row">
+                                <input type="text" id="qa-input-${p.id}" class="poem-qa-input" placeholder="${I18N[state.lang].askPoemPlaceholder}">
+                                <button class="poem-qa-btn" onclick="submitPoemQA('${p.id}')">${I18N[state.lang].btnAskPoem}</button>
+                            </div>
+                            <div id="qa-result-${p.id}" style="display:none; margin-top:10px; font-size:14px; background:#FFFFFF; padding:12px; border-radius:6px; border:1px solid #E5E7EB;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (reset) {
+                container.innerHTML = html;
+            } else {
+                container.insertAdjacentHTML('beforeend', html);
+            }
+        }
+
+        async function submitPoemQA(poemId) {
+            const inp = document.getElementById(`qa-input-${poemId}`);
+            const q = inp.value.trim();
+            if (!q) return;
+
+            const resDiv = document.getElementById(`qa-result-${poemId}`);
+            resDiv.style.display = 'block';
+            resDiv.innerHTML = '<em>Searching poem context...</em>';
+
+            try {
+                const res = await fetch('/api/poem-query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': state.token ? `Bearer ${state.token}` : ''
+                    },
+                    body: JSON.stringify({
+                        poem_id: poemId,
+                        question: q,
+                        language: state.lang
+                    })
+                });
+                const data = await res.json();
+                resDiv.innerHTML = `<strong>பதில் / Answer:</strong><br>${data.answer}`;
+            } catch (e) {
+                resDiv.innerHTML = 'Error retrieving answer.';
+            }
+        }
+
+        function setWorkFilter(work, el) {
+            state.currentWorkFilter = work;
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            if (el) el.classList.add('active');
+            loadPoems(true);
+        }
+
+        let searchDebounceTimer = null;
+        function debounceSearch() {
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => {
+                loadPoems(true);
+            }, 300);
+        }
+
+        function loadMorePoems() {
+            loadPoems(false);
+        }
+
+        function openWork(work, verseNum) {
+            if (work === 'Thirukkural') {
+                navigate('thirukkural');
+                if (verseNum) {
+                    const chNum = Math.ceil(parseInt(verseNum) / 10);
+                    document.getElementById('tk-adhikaram-select').value = chNum;
+                    loadChapterKurals(chNum, parseInt(verseNum));
+                }
+            } else {
+                navigate('explore');
+                setWorkFilter(work);
+                if (verseNum) {
+                    document.getElementById('explorer-search').value = verseNum;
+                    loadPoems(true);
+                }
+            }
+        }
+
+        // --- PAGE 4: THIRUKKURAL DEDICATED PAGE ---
+        function setTkTab(tab) {
+            document.getElementById('tab-btn-browse').classList.toggle('active', tab === 'browse');
+            document.getElementById('tab-btn-compare').classList.toggle('active', tab === 'compare');
+            document.getElementById('tab-btn-quiz').classList.toggle('active', tab === 'quiz');
+
+            document.getElementById('tk-subview-browse').style.display = tab === 'browse' ? 'block' : 'none';
+            document.getElementById('tk-subview-compare').style.display = tab === 'compare' ? 'block' : 'none';
+            document.getElementById('tk-subview-quiz').style.display = tab === 'quiz' ? 'block' : 'none';
+
+            if (tab === 'quiz') loadQuizzes();
+        }
+
+        async function loadThirukkuralChapters() {
+            try {
+                const res = await fetch('/api/literature/thirukkural/chapters');
+                const data = await res.json();
+                const sel = document.getElementById('tk-adhikaram-select');
+                sel.innerHTML = '';
+
+                data.sections.forEach(sec => {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = `${sec.paal} (${sec.paal_en})`;
+                    sec.chapters.forEach(ch => {
+                        const opt = document.createElement('option');
+                        opt.value = ch.chapter_number;
+                        opt.textContent = `${ch.chapter_number}. ${ch.chapter_name} (Kurals ${ch.start_kural}-${ch.end_kural})`;
+                        optgroup.appendChild(opt);
+                    });
+                    sel.appendChild(optgroup);
+                });
+
+                if (sel.options.length > 0) {
+                    loadChapterKurals(sel.options[0].value);
+                }
+            } catch (e) {
+                console.error("Error loading chapters", e);
+            }
+        }
+
+        async function loadChapterKurals(chNum, highlightKuralNum = null) {
+            try {
+                const res = await fetch(`/api/literature/thirukkural/chapter/${chNum}`);
+                const data = await res.json();
+                const container = document.getElementById('tk-kurals-container');
+                const isTamil = state.lang === 'ta';
+
+                container.innerHTML = data.kurals.map(k => {
+                    const shareUrl = `${window.location.origin}${window.location.pathname}#/kural/${k.verse_number}`;
+                    const isHighlighted = highlightKuralNum && k.verse_number === highlightKuralNum;
+
+                    return `
+                        <div class="poem-card" id="kural-card-${k.verse_number}" style="${isHighlighted ? 'border: 2px solid var(--accent-gold); box-shadow:0 0 15px rgba(201,162,39,0.3);' : ''}">
+                            <div class="poem-card-top">
+                                <span class="poem-ref-badge">குறள் ${k.verse_number} · ${k.chapter_name} (${k.section})</span>
+                                <div class="poem-actions-row">
+                                    <button class="btn-action-pill" onclick="copyToClipboard('${shareUrl}')">🔗 Share</button>
+                                    <button class="btn-action-pill" onclick="bookmarkVerse('${k.id}', 'Thirukkural', '${k.verse_number}')">🔖 Save</button>
+                                </div>
+                            </div>
+
+                            <!-- Classical Thiruvalluvar Palm-Leaf Motif -->
+                            <div class="palm-leaf-card-header">
+                                <img src="/static/images/thirukkural.jpg" class="motif-thumbnail" alt="Thiruvalluvar Palm-Leaf Artwork">
+                                <div class="motif-info">
+                                    <span class="motif-tag">திருக்குறள் ஏட்டுச் சுவடிப் பொறிப்பு</span>
+                                    <div class="motif-title">அதிகாரம் ${k.chapter_number}: ${k.chapter_name}</div>
+                                    <div class="motif-subtitle">${k.section} · திருவள்ளுவர்</div>
+                                </div>
+                            </div>
+
+                            <div class="poem-tamil-box">${k.text_tamil}</div>
+
+                            ${isTamil ? `
+                                <div class="poem-exp-tamil"><strong>மு. வரதராசனார் உரை:</strong> ${k.explanation_tamil}</div>
+                                <div class="poem-exp-english"><strong>English Meaning:</strong> ${k.explanation_english}</div>
+                            ` : `
+                                <div class="poem-exp-english" style="font-size:15px; color:#1F2937; border-left-color:var(--accent-gold);">
+                                    <strong>English Meaning:</strong> ${k.explanation_english}
+                                </div>
+                                <div class="poem-exp-tamil" style="border-left-color:#CBD5E1; color:#57606A;">
+                                    <strong>Tamil Explanation:</strong> ${k.explanation_tamil}
+                                </div>
+                            `}
+                        </div>
+                    `;
+                }).join('');
+
+                if (highlightKuralNum) {
+                    setTimeout(() => {
+                        const targetCard = document.getElementById(`kural-card-${highlightKuralNum}`);
+                        if (targetCard) targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 200);
+                }
+            } catch (e) {
+                console.error("Error loading chapter kurals", e);
+            }
+        }
+
+        // Compare Tool
+        async function runComparison() {
+            const k1 = document.getElementById('cmp-kural1').value;
+            const k2 = document.getElementById('cmp-kural2').value;
+            const area = document.getElementById('compare-results-area');
+            area.style.display = 'grid';
+            area.innerHTML = '<div style="grid-column:1/-1; text-align:center;">Comparing...</div>';
+
+            try {
+                const res = await fetch(`/api/literature/thirukkural/compare?kural1=${k1}&kural2=${k2}`);
+                const data = await res.json();
+                const shareUrl = `${window.location.origin}${window.location.pathname}#/thirukkural`;
+
+                area.innerHTML = `
+                    <div class="compare-card">
+                        <div class="poem-ref-badge" style="margin-bottom:8px;">குறள் ${data.kural_1.verse_number} (${data.kural_1.chapter_name})</div>
+                        <div class="pure-verse-text" style="font-size:16px;">${data.kural_1.text_tamil}</div>
+                        <div style="font-size:13px; color:#1F2937; margin-top:8px;">${data.kural_1.explanation_tamil}</div>
+                    </div>
+                    <div class="compare-card">
+                        <div class="poem-ref-badge" style="margin-bottom:8px;">குறள் ${data.kural_2.verse_number} (${data.kural_2.chapter_name})</div>
+                        <div class="pure-verse-text" style="font-size:16px;">${data.kural_2.text_tamil}</div>
+                        <div style="font-size:13px; color:#1F2937; margin-top:8px;">${data.kural_2.explanation_tamil}</div>
+                    </div>
+                    <div class="compare-analysis">
+                        <strong>ஒப்பீட்டு ஆய்வு / Difference Analysis:</strong><br>
+                        ${data.difference_analysis}
+                    </div>
+                `;
+            } catch (e) {
+                area.innerHTML = '<div style="grid-column:1/-1; color:red;">Could not load comparison.</div>';
+            }
+        }
+
+        // Student Exam Quiz Module
+        let quizState = { answered: 0, score: 0 };
+        async function loadQuizzes() {
+            const container = document.getElementById('quiz-cards-container');
+            container.innerHTML = '<div style="text-align:center;">Loading quiz questions...</div>';
+
+            try {
+                const res = await fetch('/api/literature/thirukkural/quiz');
+                const data = await res.json();
+                quizState = { answered: 0, score: 0 };
+                document.getElementById('quiz-score-badge').textContent = `${I18N[state.lang].quizScorePrefix}0 / ${data.quizzes.length}`;
+
+                container.innerHTML = data.quizzes.map((q, idx) => `
+                    <div class="quiz-card" id="qcard-${idx}">
+                        <div class="quiz-q">${idx + 1}. ${state.lang === 'ta' ? q.question_tamil : q.question_english}</div>
+                        <div class="quiz-options">
+                            ${q.options.map((opt, optIdx) => `
+                                <button class="quiz-opt" id="opt-${idx}-${optIdx}" onclick="answerQuiz(${idx}, ${optIdx}, ${q.correct_index}, '${encodeURIComponent(q.explanation)}')">${opt}</button>
+                            `).join('')}
+                        </div>
+                        <div class="quiz-feedback" id="feedback-${idx}"></div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                container.innerHTML = 'Error loading quizzes.';
+            }
+        }
+
+        function answerQuiz(qIdx, selectedIdx, correctIdx, expEncoded) {
+            const exp = decodeURIComponent(expEncoded);
+            const feedback = document.getElementById(`feedback-${qIdx}`);
+            const card = document.getElementById(`qcard-${qIdx}`);
+
+            const buttons = card.querySelectorAll('.quiz-opt');
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === correctIdx) btn.classList.add('correct');
+            });
+
+            quizState.answered += 1;
+            if (selectedIdx === correctIdx) {
+                quizState.score += 1;
+                feedback.innerHTML = `✅ <strong>சரி / Correct!</strong> ${exp}`;
+                feedback.style.display = 'block';
+                feedback.style.background = '#DCFCE7';
+                feedback.style.color = '#15803D';
+            } else {
+                buttons[selectedIdx].classList.add('wrong');
+                feedback.innerHTML = `❌ <strong>தவறு / Incorrect.</strong> சரியான விளக்கம்: ${exp}`;
+                feedback.style.display = 'block';
+                feedback.style.background = '#FEE2E2';
+                feedback.style.color = '#B91C1C';
+            }
+
+            document.getElementById('quiz-score-badge').textContent = `${I18N[state.lang].quizScorePrefix}${quizState.score} / ${document.querySelectorAll('.quiz-card').length}`;
+        }
+
+        // --- PAGE 5: HISTORY & BOOKMARKS ---
+        function setHistTab(tab) {
+            state.currentHistTab = tab;
+            document.getElementById('hist-tab-queries').classList.toggle('active', tab === 'queries');
+            document.getElementById('hist-tab-bookmarks').classList.toggle('active', tab === 'bookmarks');
+            loadUserHistory();
+        }
+
+        async function loadUserHistory() {
+            const area = document.getElementById('history-list-area');
+            if (!state.user) {
+                area.innerHTML = `
+                    <div class="auth-card" style="margin:20px auto; text-align:center;">
+                        <h3>Please Log In / உள்நுழைக</h3>
+                        <p style="font-size:14px; color:var(--text-muted); margin:8px 0 16px 0;">Sign in to view your server-persisted question history and saved bookmarks.</p>
+                        <button class="btn-primary" onclick="navigate('login')">Log In Now</button>
+                    </div>
+                `;
+                return;
+            }
+
+            area.innerHTML = '<div style="text-align:center; padding:20px;">Loading history from database...</div>';
+
+            if (state.currentHistTab === 'queries') {
+                try {
+                    const res = await fetch('/api/user/history', {
+                        headers: { 'Authorization': `Bearer ${state.token}` }
+                    });
+                    const data = await res.json();
+                    if (!data.history || data.history.length === 0) {
+                        area.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-muted);">No past questions recorded yet.</div>';
+                        return;
+                    }
+                    area.innerHTML = data.history.map(h => `
+                        <div class="history-item">
+                            <div class="history-q">❓ ${h.question}</div>
+                            <div class="history-ans">${h.answer}</div>
+                            <div class="history-footer">
+                                <span>${h.citation ? '📖 ' + h.citation : ''}</span>
+                                <span>${new Date(h.created_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                } catch (e) {
+                    area.innerHTML = '<div style="color:red;">Error loading history.</div>';
+                }
+            } else {
+                // Bookmarks
+                try {
+                    const res = await fetch('/api/user/bookmarks', {
+                        headers: { 'Authorization': `Bearer ${state.token}` }
+                    });
+                    const data = await res.json();
+                    if (!data.bookmarks || data.bookmarks.length === 0) {
+                        area.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-muted);">No bookmarks saved yet. Click 🔖 on any verse to save it!</div>';
+                        return;
+                    }
+                    area.innerHTML = data.bookmarks.map(b => `
+                        <div class="poem-card">
+                            <div class="poem-card-top">
+                                <span class="poem-ref-badge">${b.work} #${b.verse_number} (${b.chapter_name || ''})</span>
+                                <button style="background:none; border:none; color:red; cursor:pointer;" onclick="deleteBookmark('${b.verse_id}')">Remove ❌</button>
+                            </div>
+                            <div class="pure-verse-text" style="font-size:16px;">${b.text_tamil}</div>
+                            <div class="poem-exp-tamil">${b.explanation_tamil || ''}</div>
+                        </div>
+                    `).join('');
+                } catch (e) {
+                    area.innerHTML = '<div style="color:red;">Error loading bookmarks.</div>';
+                }
+            }
+        }
+
+        async function clearUserHistory() {
+            if (!state.user) return;
+            if (!confirm("Are you sure you want to clear your entire question history? / வரலாற்றை நீக்க வேண்டுமா?")) return;
+
+            try {
+                await fetch('/api/user/history', {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${state.token}` }
+                });
+                showToast("History cleared / வரலாறு நீக்கப்பட்டது.");
+                loadUserHistory();
+            } catch (e) {
+                showToast("Error clearing history.");
+            }
+        }
+
+        async function bookmarkVerse(verseId, work, verseNum) {
+            if (!state.user) {
+                showToast("Please log in to save bookmarks! / உள்நுழையவும்");
+                navigate('login');
+                return;
+            }
+            try {
+                const res = await fetch('/api/user/bookmarks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.token}`
+                    },
+                    body: JSON.stringify({
+                        verse_id: verseId,
+                        work: work,
+                        verse_number: verseNum
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`Bookmarked ${work} #${verseNum}! 🔖`);
+                }
+            } catch (e) {
+                showToast("Error saving bookmark.");
+            }
+        }
+
+        async function deleteBookmark(verseId) {
+            try {
+                await fetch(`/api/user/bookmarks/${verseId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${state.token}` }
+                });
+                showToast("Bookmark removed.");
+                loadUserHistory();
+            } catch (e) {
+                showToast("Error removing bookmark.");
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 2800);
+        }
+    </script>
+</body>
+</html>
