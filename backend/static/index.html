@@ -1206,11 +1206,11 @@
         </nav>
 
         <div class="header-actions">
-            <!-- Language Switcher: Tamil, English, and Hindi -->
+            <!-- Language Switcher: FIXED INVERSION BUG -->
+            <!-- Clicking 'தமிழ்' activates Tamil; clicking 'English' activates English -->
             <div class="lang-switch">
                 <button class="lang-btn active" id="btn-lang-ta" onclick="setLanguage('ta')">தமிழ்</button>
                 <button class="lang-btn" id="btn-lang-en" onclick="setLanguage('en')">English</button>
-                <button class="lang-btn" id="btn-lang-hi" onclick="setLanguage('hi')">हिन्दी</button>
             </div>
 
             <!-- Global Share Page Link Button -->
@@ -1508,56 +1508,49 @@
                 img: '/static/images/thirukkural.jpg',
                 title: 'திருவள்ளுவர் அருளிய திருக்குறள்',
                 titleEn: 'Sage Thiruvalluvar — Thirukkural',
-                titleHi: 'संत तिरुवल्लुवर — तिरुक्कुरल',
                 era: 'செவ்வியல் அற நூல் (Ethics & Philosophy)'
             },
             'Purananuru': {
                 img: '/static/images/sangam.jpg',
                 title: 'புறநானூறு — சங்கப் புலவர் பெருமக்கள்',
                 titleEn: 'Purananuru — Classical Sangam Anthology',
-                titleHi: 'पुरनानूरु — शास्त्रीय संगम काव्य संग्रह',
                 era: 'சங்க காலம் (Valor & Governance)'
             },
             'Akananuru': {
                 img: '/static/images/sangam.jpg',
                 title: 'அகநானூறு — நெஞ்சத்து அகக் கவிதைகள்',
                 titleEn: 'Akananuru — Sangam Love Poetry',
-                titleHi: 'अकनानूरु — संगम प्रेम काव्य',
                 era: 'சங்க காலம் (Akam Anthology)'
             },
             'Natrinai': {
                 img: '/static/images/sangam.jpg',
                 title: 'நற்றிணை — ஐந்திணை வாழ்வியல்',
                 titleEn: 'Natrinai — Ancient Landscape & Emotion',
-                titleHi: 'नற்றிணை — प्राचीन संगम प्रकृति व भाव',
                 era: 'சங்க காலம் (Classical Anthologies)'
             },
             'Kuruntokai': {
                 img: '/static/images/sangam.jpg',
                 title: 'குறுந்தொகை — தமிழ்ப் பாணர் பாடல்',
                 titleEn: 'Kuruntokai — Lyrical Love Poetry',
-                titleHi: 'कुरुंतोकै — संगम गीत काव्य',
                 era: 'சங்க காலம் (Sangam Lyric Poetry)'
             },
             'Silappathikaram': {
                 img: '/static/images/silappathikaram.jpg',
                 title: 'சிலப்பதிகாரம் — மாமதுரைக் கோயில் சிலம்பு',
                 titleEn: 'Silappathikaram — The Golden Anklet Epic',
-                titleHi: 'शिलप्पादिकारम — नूपुर महाकाव्य',
                 era: 'இளங்கோவடிகள் அருளிய பெருங்காப்பியம்'
             },
             'Manimekalai': {
                 img: '/static/images/manimekalai.jpg',
                 title: 'மணிமேகலை — அமுதசுரபியும் அருளும்',
                 titleEn: 'Manimekalai — The Inexhaustible Bowl Epic',
-                titleHi: 'मणिमेकलै — अक्षयपात्र महाकाव्य',
                 era: 'சீத்தலைச் சாத்தனார் அருளிய காப்பியம்'
             }
         };
 
         // --- State Management ---
         const state = {
-            lang: localStorage.getItem('ilakkiya_lang') || 'ta',
+            lang: 'ta', // 'ta' for Tamil, 'en' for English
             user: null,
             token: localStorage.getItem('ilakkiya_auth_token') || null,
             currentPage: 'home',
@@ -1568,76 +1561,8 @@
             isListening: false,
             recognition: null,
             authMode: 'login',
-            currentHistTab: 'queries',
-            lastAnswerData: null,
-            lastQuery: ''
+            currentHistTab: 'queries'
         };
-
-        // --- Multilingual Content Resolver Helper (Strict - No silent Tamil fallback when EN/HI requested) ---
-        function getMultilingualField(obj, field, lang) {
-            if (!obj) return '';
-            
-            // 1. Direct dictionary mapping: {ta, en, hi}
-            if (obj[field] && typeof obj[field] === 'object') {
-                const val = obj[field][lang];
-                if (val && String(val).trim()) return val;
-                if (lang === 'en') return (field === 'title' ? (obj.title_english || 'Classical Chapter') : 'English translation unavailable');
-                if (lang === 'hi') return (field === 'title' ? (obj.title_hindi || 'शास्त्रीय अध्याय') : 'हिन्दी अनुवाद उपलब्ध नहीं है');
-                return obj[field]['ta'] || '';
-            }
-
-            // 2. Direct property mapping based on requested language
-            if (lang === 'en') {
-                if (field === 'content' || field === 'kural' || field === 'text') {
-                    return obj.text_english || obj.explanation_english || 'English translation unavailable';
-                }
-                if (field === 'meaning' || field === 'explanation') {
-                    return obj.explanation_english || 'English explanation unavailable';
-                }
-                if (field === 'title') {
-                    return obj.title_english || obj.chapter_name_en || (obj.work ? `${obj.work} #${obj.verse_number || ''}` : 'Classical Chapter');
-                }
-                if (field === 'author') {
-                    return obj.poet_english || (obj.work === 'Thirukkural' ? 'Thiruvalluvar' : 'Classical Poet');
-                }
-                if (field === 'section_info') {
-                    return obj.section_english || obj.section || 'Virtue';
-                }
-            } else if (lang === 'hi') {
-                if (field === 'content' || field === 'kural' || field === 'text') {
-                    return obj.text_hindi || obj.explanation_hindi || 'हिन्दी अनुवाद उपलब्ध नहीं है';
-                }
-                if (field === 'meaning' || field === 'explanation') {
-                    return obj.explanation_hindi || 'हिन्दी भावार्थ उपलब्ध नहीं है';
-                }
-                if (field === 'title') {
-                    return obj.title_hindi || obj.chapter_name_hi || (obj.work ? `${obj.work} #${obj.verse_number || ''}` : 'शास्त्रीय अध्याय');
-                }
-                if (field === 'author') {
-                    return obj.poet_hindi || (obj.work === 'Thirukkural' ? 'तिरुवल्लुवर' : 'शास्त्रीय कवि');
-                }
-                if (field === 'section_info') {
-                    return obj.section_hindi || obj.section || 'धर्म';
-                }
-            } else {
-                if (field === 'content' || field === 'kural' || field === 'text') {
-                    return obj.text_tamil || '';
-                }
-                if (field === 'meaning' || field === 'explanation') {
-                    return obj.explanation_tamil || '';
-                }
-                if (field === 'title') {
-                    return obj.chapter_name || obj.title_tamil || (obj.work ? `${obj.work} #${obj.verse_number || ''}` : 'இலக்கியப் பகுதி');
-                }
-                if (field === 'author') {
-                    return obj.poet || 'புலவர்';
-                }
-                if (field === 'section_info') {
-                    return obj.section || '';
-                }
-            }
-            return '';
-        }
 
         // Full Comprehensive Bilingual Dictionary
         const I18N = {
@@ -1716,44 +1641,6 @@
                 askPoemPlaceholder: "Ask a question specifically about this verse...",
                 btnAskPoem: "Ask",
                 copiedToast: "🔗 Shareable link copied to clipboard! Anyone can open this directly."
-            },
-            hi: {
-                brandSub: "शास्त्रीय तमिल साहित्य एआई",
-                navHome: "होम",
-                navExplore: "सभी काव्य",
-                navTk: "तिरुक्कुरल",
-                navHist: "इतिहास एवं सुरक्षित",
-                shareLabel: "साझा करें",
-                heroGreeting: "नमस्ते! 👋",
-                heroSubtitle: "आज आप क्या सीखना चाहते हैं? 7 प्रामाणिक शास्त्रीय तमिल ग्रंथों पर आधारित।",
-                askPlaceholder: "तमिल, अंग्रेज़ी या हिन्दी में प्रश्न पूछें (जैसे: तिरुक्कुरल मित्रता के बारे में क्या कहता है?)...",
-                btnAsk: "एआई से पूछें",
-                exploreLabel: "प्रामाणिक साहित्य संग्रह",
-                viewAll: "सभी देखें ➔",
-                recentLabel: "हाल के प्रश्न",
-                userGuest: "अतिथि / लॉगिन",
-                lblSangam: "संगम साहित्य (Sangam Literature)",
-                lblEpics: "तमिल महाकाव्य (Tamil Epics)",
-                exploreTitle: "शास्त्रीय साहित्य कोष",
-                exploreSub: "ताड़पत्र पांडुलिपि चित्रों के साथ 7 प्रामाणिक तमिल साहित्य के पदों का अन्वेषण करें।",
-                loadMore: "और पद लोड करें",
-                tabTkBrowse: "1,330 कुरल",
-                tabTkCompare: "कुरल तुलना विश्लेषण (Compare)",
-                tabTkQuiz: "छात्र परीक्षा अभ्यास (Quiz)",
-                compareTitle: "दो कुरल पदों की तुलना करें",
-                compareSub: "दो कुरल संख्याएं चुनकर उनके दार्शनिक अंतर और भावार्थ का विश्लेषण करें।",
-                btnCompare: "तुलना करें",
-                quizTitle: "छात्र तिरुक्कुरल प्रश्नोत्तरी",
-                quizSub: "परीक्षा की तैयारी के लिए तिरुक्कुरल पर आधारित अभ्यास प्रश्न।",
-                quizScorePrefix: "अंक: ",
-                histTitle: "प्रश्न इतिहास एवं सुरक्षित पद",
-                histSub: "आपके प्रश्न और सुरक्षित किए गए शास्त्रीय पद डेटाबेस में सुरक्षित रहते हैं।",
-                btnClearHist: "इतिहास साफ़ करें",
-                tabHistQ: "पूछे गए प्रश्न",
-                tabHistB: "सुरक्षित पद (Bookmarks)",
-                askPoemPlaceholder: "इस पद के बारे में कोई प्रश्न पूछें...",
-                btnAskPoem: "पूछें",
-                copiedToast: "🔗 साझा करने योग्य लिंक कॉपी हो गया! इसे किसी के साथ भी साझा किया जा सकता है।"
             }
         };
 
@@ -1761,7 +1648,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             initAuth();
             initSpeech();
-            setLanguage(state.lang);
+            loadThirukkuralChapters();
+            applyLanguage();
+            loadPoems(true);
 
             // Hash Router Support with Deep Links
             window.addEventListener('hashchange', handleRoute);
@@ -1893,48 +1782,27 @@
             document.body.removeChild(ta);
         }
 
-        // --- Language Toggle: Tamil, English, Hindi ---
+        // --- Language Toggle (FIXED INVERSION BUG — Requirement 2) ---
         function setLanguage(lang) {
             state.lang = lang;
-            try {
-                localStorage.setItem('ilakkiya_lang', lang);
-            } catch (e) {}
-
             // Update button visual active state
             document.getElementById('btn-lang-ta').classList.toggle('active', lang === 'ta');
             document.getElementById('btn-lang-en').classList.toggle('active', lang === 'en');
-            const btnHi = document.getElementById('btn-lang-hi');
-            if (btnHi) btnHi.classList.toggle('active', lang === 'hi');
             
             // Re-apply language to every text in the app
             applyLanguage();
 
-            // Re-populate chapter dropdown in current language
-            loadThirukkuralChapters();
-
-            // Immediately update the currently open page/content
+            // Re-render open poems to reflect preferred language ordering
             if (state.currentPage === 'explore') {
                 loadPoems(true);
             } else if (state.currentPage === 'thirukkural') {
                 const sel = document.getElementById('tk-adhikaram-select');
                 if (sel && sel.value) loadChapterKurals(sel.value);
-                const k1 = document.getElementById('cmp-kural1');
-                const k2 = document.getElementById('cmp-kural2');
-                if (k1 && k2 && k1.value && k2.value) runComparison();
-            } else if (state.currentPage === 'history') {
-                loadUserHistory();
-            } else if (state.currentPage === 'home') {
-                if (state.lastQuery) {
-                    submitHomeAsk();
-                } else if (state.lastAnswerData) {
-                    const area = document.getElementById('home-answer-area');
-                    if (area) renderAnswerCard(state.lastAnswerData, area, state.lastQuery);
-                }
             }
         }
 
         function applyLanguage() {
-            const t = I18N[state.lang] || I18N.ta;
+            const t = I18N[state.lang];
             
             // Header & Brand
             document.getElementById('brand-sub-label').textContent = t.brandSub;
@@ -1965,12 +1833,6 @@
             document.getElementById('explore-page-title').textContent = t.exploreTitle;
             document.getElementById('explore-page-sub').textContent = t.exploreSub;
             document.getElementById('btn-load-more').textContent = t.loadMore;
-            const expSearch = document.getElementById('explorer-search');
-            if (expSearch) {
-                if (state.lang === 'en') expSearch.placeholder = "Search poems, verses, topics, or keywords...";
-                else if (state.lang === 'hi') expSearch.placeholder = "काव्य, पद, विषय या शब्द खोजें...";
-                else expSearch.placeholder = "பாடல்கள், சொற்கள், கருத்துக்களைத் தேடுக...";
-            }
 
             // Thirukkural Page
             document.getElementById('tab-btn-browse').textContent = t.tabTkBrowse;
@@ -2153,7 +2015,6 @@
             const q = document.getElementById('home-ask-input').value.trim();
             if (!q) return;
 
-            state.lastQuery = q;
             const area = document.getElementById('home-answer-area');
             area.style.display = 'block';
             area.innerHTML = `
@@ -2171,15 +2032,12 @@
                         'Authorization': state.token ? `Bearer ${state.token}` : ''
                     },
                     body: JSON.stringify({
-                        question: q,
                         query: q,
-                        language: state.lang,
-                        top_k: 5
+                        language: state.lang
                     })
                 });
 
                 const data = await res.json();
-                state.lastAnswerData = data;
                 renderAnswerCard(data, area, q);
             } catch (e) {
                 area.innerHTML = `
@@ -2204,7 +2062,7 @@
                     <div class="abstain-card">
                         <div class="abstain-icon">⚖️</div>
                         <div class="abstain-title">போதுமான இலக்கியச் சான்று கிடைக்கவில்லை (Abstention)</div>
-                        <div class="abstain-desc">${data.message || data.answer || "I couldn't find sufficient evidence in the available 7 Tamil classical literature works."}</div>
+                        <div class="abstain-desc">${data.message || "I couldn't find sufficient evidence in the available 7 Tamil classical literature works."}</div>
                     </div>
                 `;
                 return;
@@ -2230,64 +2088,12 @@
                 `;
             }
 
-            const isTamil = state.lang === 'ta';
-            const isHindi = state.lang === 'hi';
-            const isEnglish = state.lang === 'en';
-
-            const chapterTitle = isEnglish ? (ev.title_english || ev.chapter) : (isHindi ? (ev.title_hindi || ev.chapter) : ev.chapter);
-            const poetName = isEnglish ? (ev.poet_english || ev.poet || 'Classical Poet') : (isHindi ? (ev.poet_hindi || ev.poet || 'शास्त्रीय कवि') : (ev.poet || 'சங்கப் புலவர்'));
-            const motifTitle = isTamil ? motifMeta.title : (isHindi ? (motifMeta.titleHi || motifMeta.titleEn) : motifMeta.titleEn);
-
-            // Multilingual Primary Verse Text
-            let primaryVerseText = '';
-            let secondaryTamilHtml = '';
-            if (isEnglish) {
-                primaryVerseText = ev.text_english || ev.meaning_english || 'English translation unavailable';
-                secondaryTamilHtml = `<div style="font-size:12px; color:var(--text-muted); margin-top:8px; font-style:italic;">Original Tamil: ${ev.text_tamil}</div>`;
-            } else if (isHindi) {
-                primaryVerseText = ev.text_hindi || ev.meaning_hindi || 'हिन्दी अनुवाद उपलब्ध नहीं है';
-                secondaryTamilHtml = `<div style="font-size:12px; color:var(--text-muted); margin-top:8px; font-style:italic;">मूल तमिल (Original Tamil): ${ev.text_tamil}</div>`;
-            } else {
-                primaryVerseText = ev.text_tamil;
-            }
-
-            // Meaning Block in Selected Language
-            let meaningBlockHtml = '';
-            if (isTamil) {
-                meaningBlockHtml = `
-                    <div class="meaning-subheading">தமிழ் உரை விளக்கம் / Tamil Meaning:</div>
-                    <div class="meaning-content" style="font-size:16px;">${ev.meaning_tamil || 'செவ்வியல் உரை விளக்கம்.'}</div>
-                    ${ev.meaning_english ? `
-                        <div class="meaning-subheading" style="margin-top:12px;">English Translation:</div>
-                        <div class="meaning-content" style="color:#57606A;">${ev.meaning_english}</div>
-                    ` : ''}
-                `;
-            } else if (isHindi) {
-                meaningBlockHtml = `
-                    <div class="meaning-subheading">हिन्दी भावार्थ / Hindi Explanation:</div>
-                    <div class="meaning-content" style="font-size:16px; color:#1F2937;">${ev.meaning_hindi || data.answer}</div>
-                    ${ev.meaning_tamil ? `
-                        <div class="meaning-subheading" style="margin-top:12px;">தமிழ் உரை விளக்கம் / Tamil Meaning:</div>
-                        <div class="meaning-content" style="color:#57606A;">${ev.meaning_tamil}</div>
-                    ` : ''}
-                `;
-            } else {
-                meaningBlockHtml = `
-                    <div class="meaning-subheading">English Interpretation:</div>
-                    <div class="meaning-content" style="font-size:16px; color:#1F2937;">${ev.meaning_english || data.answer}</div>
-                    ${ev.meaning_tamil ? `
-                        <div class="meaning-subheading" style="margin-top:12px;">தமிழ் உரை விளக்கம் / Tamil Meaning:</div>
-                        <div class="meaning-content" style="color:#57606A;">${ev.meaning_tamil}</div>
-                    ` : ''}
-                `;
-            }
-
             container.innerHTML = `
                 <div class="evidence-card">
                     <!-- Header with Confidence Meter -->
                     <div class="evidence-card-header">
                         <div style="font-size:14px; font-weight:800; color:var(--primary);">
-                            📖 ${ev.work} — ${chapterTitle} (${ev.verse_number ? 'Verse #' + ev.verse_number : ''})
+                            📖 ${ev.work} — ${ev.chapter} (${ev.verse_number ? 'Verse #' + ev.verse_number : ''})
                         </div>
                         <div class="confidence-meter">
                             <span>${pct}% Evidence Match</span>
@@ -2302,34 +2108,47 @@
                         ${data.answer}
                     </div>
 
-                    <!-- 2. Evidence Panel with Traditional Palm-Leaf Motif & Multilingual Verse -->
+                    <!-- 2. Evidence Panel with Traditional Palm-Leaf Motif & Pure Verse -->
                     <div class="block-evidence">
                         <!-- Classical Palm-Leaf Art Motif -->
                         <div class="palm-leaf-card-header">
                             <img src="${motifMeta.img}" class="motif-thumbnail" alt="${ev.work} Palm-Leaf Artwork">
                             <div class="motif-info">
                                 <span class="motif-tag">ஏட்டுச் சுவடிச் சான்று · Palm-Leaf Manuscript Evidence</span>
-                                <div class="motif-title">${ev.work} — ${chapterTitle}</div>
-                                <div class="motif-subtitle">${motifTitle}</div>
+                                <div class="motif-title">${ev.work} — ${ev.chapter}</div>
+                                <div class="motif-subtitle">${motifMeta.title}</div>
                             </div>
                         </div>
 
-                        <!-- Pure Classical Verse Text in Selected Language -->
-                        <div class="pure-verse-text">${primaryVerseText}</div>
-                        ${secondaryTamilHtml}
-                        ${ev.text_transliteration && isTamil ? `<div class="verse-translit">${ev.text_transliteration}</div>` : ''}
+                        <!-- Pure Classical Verse Text -->
+                        <div class="pure-verse-text">${ev.text_tamil}</div>
+                        ${ev.text_transliteration ? `<div class="verse-translit">${ev.text_transliteration}</div>` : ''}
                         <div class="evidence-reason">Matched on: ${ev.match_reason || 'Canonical classical context match'}</div>
                     </div>
 
                     <!-- 3. Meaning Block -->
                     <div class="block-meaning">
-                        ${meaningBlockHtml}
+                        ${state.lang === 'ta' ? `
+                            <div class="meaning-subheading">தமிழ் உரை விளக்கம் / Tamil Meaning:</div>
+                            <div class="meaning-content" style="font-size:16px;">${ev.meaning_tamil || 'செவ்வியல் உரை விளக்கம்.'}</div>
+                            ${ev.meaning_english ? `
+                                <div class="meaning-subheading" style="margin-top:12px;">English Translation:</div>
+                                <div class="meaning-content" style="color:#57606A;">${ev.meaning_english}</div>
+                            ` : ''}
+                        ` : `
+                            <div class="meaning-subheading">English Interpretation:</div>
+                            <div class="meaning-content" style="font-size:16px; color:#1F2937;">${ev.meaning_english || 'Classical translation.'}</div>
+                            ${ev.meaning_tamil ? `
+                                <div class="meaning-subheading" style="margin-top:12px;">தமிழ் உரை விளக்கம் / Tamil Meaning:</div>
+                                <div class="meaning-content" style="color:#57606A;">${ev.meaning_tamil}</div>
+                            ` : ''}
+                        `}
                     </div>
 
                     <!-- 4. Source Block, Bookmark & Share Buttons -->
                     <div class="block-source">
                         <div class="source-tag">
-                            🏛️ Author: <strong>${poetName}</strong> | Canonical Work: <strong>${ev.work}</strong>
+                            🏛️ Author: <strong>${ev.poet || 'சங்கப் புலவர்'}</strong> | Canonical Work: <strong>${ev.work}</strong>
                         </div>
                         <div style="display:flex; gap:8px;">
                             <button class="btn-action-pill" onclick="copyToClipboard('${shareUrl}')">🔗 Share Link</button>
@@ -2372,64 +2191,18 @@
         function renderPoemCards(poems, reset) {
             const container = document.getElementById('poems-list-container');
             const isTamil = state.lang === 'ta';
-            const isHindi = state.lang === 'hi';
-            const isEnglish = state.lang === 'en';
 
             const html = poems.map(p => {
                 const motifMeta = WORK_ART_MOTIFS[p.work] || WORK_ART_MOTIFS['Thirukkural'];
                 const shareUrl = `${window.location.origin}${window.location.pathname}#/${p.work === 'Thirukkural' ? 'kural/' + p.verse_number : 'poem/' + p.id}`;
 
-                const displayTitle = getMultilingualField(p, 'title', state.lang);
-                const displayAuthor = getMultilingualField(p, 'author', state.lang);
-                const motifTitle = isTamil ? motifMeta.title : (isHindi ? (motifMeta.titleHi || motifMeta.titleEn) : motifMeta.titleEn);
-
-                // Primary Poem Text in Selected Language
-                let primaryPoemText = '';
-                let secondaryTamilText = '';
-
-                if (isEnglish) {
-                    primaryPoemText = getMultilingualField(p, 'content', 'en');
-                    secondaryTamilText = `<div style="font-size:12px; color:var(--text-muted); margin-top:8px; font-style:italic;">Original Tamil: ${p.text_tamil}</div>`;
-                } else if (isHindi) {
-                    primaryPoemText = getMultilingualField(p, 'content', 'hi');
-                    secondaryTamilText = `<div style="font-size:12px; color:var(--text-muted); margin-top:8px; font-style:italic;">मूल तमिल (Original Tamil): ${p.text_tamil}</div>`;
-                } else {
-                    primaryPoemText = p.text_tamil;
-                }
-
-                // Meaning Block
-                let meaningBlock = '';
-                if (isTamil) {
-                    meaningBlock = `
-                        <div class="poem-exp-tamil">
-                            <strong>தமிழ் விளக்கம்:</strong> ${getMultilingualField(p, 'meaning', 'ta') || p.explanation_tamil || 'இலக்கிய உரை விளக்கம்.'}
-                        </div>
-                    `;
-                } else if (isHindi) {
-                    meaningBlock = `
-                        <div class="poem-exp-english" style="font-size:15px; color:#1F2937; border-left-color:var(--accent-gold);">
-                            <strong>हिन्दी भावार्थ:</strong> ${getMultilingualField(p, 'meaning', 'hi')}
-                        </div>
-                    `;
-                } else {
-                    meaningBlock = `
-                        <div class="poem-exp-english" style="font-size:15px; color:#1F2937; border-left-color:var(--accent-gold);">
-                            <strong>English Meaning:</strong> ${getMultilingualField(p, 'meaning', 'en')}
-                        </div>
-                    `;
-                }
-
-                const verseBadge = isTamil 
-                    ? `${p.work} · ${displayTitle} (பாடல் #${p.verse_number})`
-                    : (isHindi ? `${p.work} · ${displayTitle} (पद #${p.verse_number})` : `${p.work} · ${displayTitle} (Verse #${p.verse_number})`);
-
                 return `
                     <div class="poem-card" id="card-${p.id}">
                         <!-- Top Metadata & Action Pills -->
                         <div class="poem-card-top">
-                            <span class="poem-ref-badge">${verseBadge}</span>
+                            <span class="poem-ref-badge">${p.work} · ${p.chapter_name || p.section} (Verse #${p.verse_number})</span>
                             <div class="poem-actions-row">
-                                <span class="poem-author">✍️ ${displayAuthor}</span>
+                                <span class="poem-author">✍️ ${p.poet || 'புலவர்'}</span>
                                 <button class="btn-action-pill" onclick="copyToClipboard('${shareUrl}')" title="Copy forwardable link">🔗 Share</button>
                                 <button class="btn-action-pill" onclick="bookmarkVerse('${p.id}', '${p.work}', '${p.verse_number}')">🔖 Save</button>
                             </div>
@@ -2440,17 +2213,34 @@
                             <img src="${motifMeta.img}" class="motif-thumbnail" alt="${p.work} Palm-Leaf Artwork">
                             <div class="motif-info">
                                 <span class="motif-tag">ஏட்டுச் சுவடி மரபுச் சித்திரம் · Palm-Leaf Art</span>
-                                <div class="motif-title">${motifTitle}</div>
+                                <div class="motif-title">${isTamil ? motifMeta.title : motifMeta.titleEn}</div>
                                 <div class="motif-subtitle">${motifMeta.era}</div>
                             </div>
                         </div>
                         
-                        <!-- Primary Verse Text in Selected Language -->
-                        <div class="poem-tamil-box">${primaryPoemText}</div>
-                        ${secondaryTamilText}
+                        <!-- Clean Pure Tamil Verse Text -->
+                        <div class="poem-tamil-box">${p.text_tamil}</div>
 
-                        <!-- Meaning in Selected Language -->
-                        ${meaningBlock}
+                        <!-- Language Priority: Based on active language toggle -->
+                        ${isTamil ? `
+                            <div class="poem-exp-tamil">
+                                <strong>தமிழ் விளக்கம்:</strong> ${p.explanation_tamil || 'இலக்கிய உரை விளக்கம்.'}
+                            </div>
+                            ${p.explanation_english ? `
+                                <div class="poem-exp-english">
+                                    <strong>English Meaning:</strong> ${p.explanation_english}
+                                </div>
+                            ` : ''}
+                        ` : `
+                            <div class="poem-exp-english" style="font-size:15px; color:#1F2937; border-left-color:var(--accent-gold);">
+                                <strong>English Meaning:</strong> ${p.explanation_english || 'Classical verse translation.'}
+                            </div>
+                            ${p.explanation_tamil ? `
+                                <div class="poem-exp-tamil" style="border-left-color:#CBD5E1; color:#57606A;">
+                                    <strong>Tamil Explanation:</strong> ${p.explanation_tamil}
+                                </div>
+                            ` : ''}
+                        `}
 
                         <!-- In-Context Poem Q&A Box -->
                         <div class="poem-qa-area">
@@ -2555,29 +2345,21 @@
                 const res = await fetch('/api/literature/thirukkural/chapters');
                 const data = await res.json();
                 const sel = document.getElementById('tk-adhikaram-select');
-                if (!sel) return;
-                const prevVal = sel.value;
                 sel.innerHTML = '';
 
                 data.sections.forEach(sec => {
                     const optgroup = document.createElement('optgroup');
-                    const paalTitle = state.lang === 'en' ? (sec.paal_en || sec.paal) : (state.lang === 'hi' ? (sec.paal_hi || sec.paal) : sec.paal);
-                    optgroup.label = paalTitle;
+                    optgroup.label = `${sec.paal} (${sec.paal_en})`;
                     sec.chapters.forEach(ch => {
                         const opt = document.createElement('option');
                         opt.value = ch.chapter_number;
-                        const chTitle = state.lang === 'en' ? (ch.title_english || ch.chapter_name) : (state.lang === 'hi' ? (ch.title_hindi || ch.chapter_name) : ch.chapter_name);
-                        const kuralRange = state.lang === 'ta' ? `குறள்கள் ${ch.start_kural}-${ch.end_kural}` : (state.lang === 'hi' ? `कुरल ${ch.start_kural}-${ch.end_kural}` : `Kurals ${ch.start_kural}-${ch.end_kural}`);
-                        opt.textContent = `${ch.chapter_number}. ${chTitle} (${kuralRange})`;
+                        opt.textContent = `${ch.chapter_number}. ${ch.chapter_name} (Kurals ${ch.start_kural}-${ch.end_kural})`;
                         optgroup.appendChild(opt);
                     });
                     sel.appendChild(optgroup);
                 });
 
-                if (prevVal && [...sel.options].some(o => o.value == prevVal)) {
-                    sel.value = prevVal;
-                    loadChapterKurals(prevVal);
-                } else if (sel.options.length > 0) {
+                if (sel.options.length > 0) {
                     loadChapterKurals(sel.options[0].value);
                 }
             } catch (e) {
@@ -2590,56 +2372,16 @@
                 const res = await fetch(`/api/literature/thirukkural/chapter/${chNum}`);
                 const data = await res.json();
                 const container = document.getElementById('tk-kurals-container');
-                if (!container) return;
-
                 const isTamil = state.lang === 'ta';
-                const isHindi = state.lang === 'hi';
-                const isEnglish = state.lang === 'en';
 
                 container.innerHTML = data.kurals.map(k => {
                     const shareUrl = `${window.location.origin}${window.location.pathname}#/kural/${k.verse_number}`;
                     const isHighlighted = highlightKuralNum && k.verse_number === highlightKuralNum;
 
-                    const chTitle = getMultilingualField(k, 'title', state.lang);
-                    const secTitle = getMultilingualField(k, 'section_info', state.lang);
-                    const poetTitle = isTamil ? 'திருவள்ளுவர்' : (isHindi ? 'संत तिरुवल्लुवर' : 'Sage Thiruvalluvar');
-
-                    // Primary Kural Text in Selected Language
-                    let primaryKuralText = '';
-                    let secondaryTamilText = '';
-
-                    if (isEnglish) {
-                        primaryKuralText = getMultilingualField(k, 'kural', 'en');
-                        secondaryTamilText = `<div style="font-size:12px; color:var(--text-muted); margin-top:8px; font-style:italic;">Original Tamil: ${k.text_tamil}</div>`;
-                    } else if (isHindi) {
-                        primaryKuralText = getMultilingualField(k, 'kural', 'hi');
-                        secondaryTamilText = `<div style="font-size:12px; color:var(--text-muted); margin-top:8px; font-style:italic;">मूल तमिल (Original Tamil): ${k.text_tamil}</div>`;
-                    } else {
-                        primaryKuralText = k.text_tamil;
-                    }
-
-                    // Meaning in Selected Language
-                    let meaningHtml = '';
-                    if (isTamil) {
-                        meaningHtml = `<div class="poem-exp-tamil"><strong>மு. வரதராசனார் உரை:</strong> ${k.explanation_tamil}</div>`;
-                    } else if (isHindi) {
-                        meaningHtml = `<div class="poem-exp-english" style="font-size:15px; color:#1F2937; border-left-color:var(--accent-gold);"><strong>हिन्दी भावार्थ:</strong> ${getMultilingualField(k, 'meaning', 'hi')}</div>`;
-                    } else {
-                        meaningHtml = `<div class="poem-exp-english" style="font-size:15px; color:#1F2937; border-left-color:var(--accent-gold);"><strong>English Meaning:</strong> ${getMultilingualField(k, 'meaning', 'en')}</div>`;
-                    }
-
-                    const badgeText = isTamil 
-                        ? `குறள் ${k.verse_number} · ${chTitle} (${secTitle})`
-                        : (isHindi ? `कुरल #${k.verse_number} · ${chTitle} (${secTitle})` : `Kural #${k.verse_number} · ${chTitle} (${secTitle})`);
-
-                    const motifTag = isTamil ? 'திருக்குறள் ஏட்டுச் சுவடிப் பொறிப்பு' : (isHindi ? 'तिरुक्कुरल ताड़पत्र उत्कीर्णन' : 'Thirukkural Palm-Leaf Inscription');
-                    const motifHeading = isTamil ? `அதிகாரம் ${k.chapter_number}: ${chTitle}` : (isHindi ? `अध्याय ${k.chapter_number}: ${chTitle}` : `Chapter ${k.chapter_number}: ${chTitle}`);
-                    const motifSub = `${secTitle} · ${poetTitle}`;
-
                     return `
                         <div class="poem-card" id="kural-card-${k.verse_number}" style="${isHighlighted ? 'border: 2px solid var(--accent-gold); box-shadow:0 0 15px rgba(201,162,39,0.3);' : ''}">
                             <div class="poem-card-top">
-                                <span class="poem-ref-badge">${badgeText}</span>
+                                <span class="poem-ref-badge">குறள் ${k.verse_number} · ${k.chapter_name} (${k.section})</span>
                                 <div class="poem-actions-row">
                                     <button class="btn-action-pill" onclick="copyToClipboard('${shareUrl}')">🔗 Share</button>
                                     <button class="btn-action-pill" onclick="bookmarkVerse('${k.id}', 'Thirukkural', '${k.verse_number}')">🔖 Save</button>
@@ -2650,16 +2392,25 @@
                             <div class="palm-leaf-card-header">
                                 <img src="/static/images/thirukkural.jpg" class="motif-thumbnail" alt="Thiruvalluvar Palm-Leaf Artwork">
                                 <div class="motif-info">
-                                    <span class="motif-tag">${motifTag}</span>
-                                    <div class="motif-title">${motifHeading}</div>
-                                    <div class="motif-subtitle">${motifSub}</div>
+                                    <span class="motif-tag">திருக்குறள் ஏட்டுச் சுவடிப் பொறிப்பு</span>
+                                    <div class="motif-title">அதிகாரம் ${k.chapter_number}: ${k.chapter_name}</div>
+                                    <div class="motif-subtitle">${k.section} · திருவள்ளுவர்</div>
                                 </div>
                             </div>
 
-                            <div class="poem-tamil-box">${primaryKuralText}</div>
-                            ${secondaryTamilText}
+                            <div class="poem-tamil-box">${k.text_tamil}</div>
 
-                            ${meaningHtml}
+                            ${isTamil ? `
+                                <div class="poem-exp-tamil"><strong>மு. வரதராசனார் உரை:</strong> ${k.explanation_tamil}</div>
+                                <div class="poem-exp-english"><strong>English Meaning:</strong> ${k.explanation_english}</div>
+                            ` : `
+                                <div class="poem-exp-english" style="font-size:15px; color:#1F2937; border-left-color:var(--accent-gold);">
+                                    <strong>English Meaning:</strong> ${k.explanation_english}
+                                </div>
+                                <div class="poem-exp-tamil" style="border-left-color:#CBD5E1; color:#57606A;">
+                                    <strong>Tamil Explanation:</strong> ${k.explanation_tamil}
+                                </div>
+                            `}
                         </div>
                     `;
                 }).join('');
@@ -2677,53 +2428,31 @@
 
         // Compare Tool
         async function runComparison() {
-            const k1Val = document.getElementById('cmp-kural1').value;
-            const k2Val = document.getElementById('cmp-kural2').value;
+            const k1 = document.getElementById('cmp-kural1').value;
+            const k2 = document.getElementById('cmp-kural2').value;
             const area = document.getElementById('compare-results-area');
             area.style.display = 'grid';
             area.innerHTML = '<div style="grid-column:1/-1; text-align:center;">Comparing...</div>';
 
             try {
-                const res = await fetch(`/api/literature/thirukkural/compare?kural1=${k1Val}&kural2=${k2Val}`);
+                const res = await fetch(`/api/literature/thirukkural/compare?kural1=${k1}&kural2=${k2}`);
                 const data = await res.json();
-                
-                const k1 = data.kural_1;
-                const k2 = data.kural_2;
-
-                const isTamil = state.lang === 'ta';
-                const isHindi = state.lang === 'hi';
-
-                const k1Title = getMultilingualField(k1, 'title', state.lang);
-                const k2Title = getMultilingualField(k2, 'title', state.lang);
-
-                const k1Badge = isTamil ? `குறள் ${k1.verse_number} (${k1Title})` : (isHindi ? `कुरल #${k1.verse_number} (${k1Title})` : `Kural #${k1.verse_number} (${k1Title})`);
-                const k2Badge = isTamil ? `குறள் ${k2.verse_number} (${k2Title})` : (isHindi ? `कुरल #${k2.verse_number} (${k2Title})` : `Kural #${k2.verse_number} (${k2Title})`);
-
-                const k1Primary = getMultilingualField(k1, 'kural', state.lang);
-                const k2Primary = getMultilingualField(k2, 'kural', state.lang);
-
-                const k1Exp = getMultilingualField(k1, 'meaning', state.lang);
-                const k2Exp = getMultilingualField(k2, 'meaning', state.lang);
-
-                const analysisLabel = isTamil ? 'ஒப்பீட்டு ஆய்வு / Difference Analysis:' : (isHindi ? 'तुलनात्मक विश्लेषण / Comparative Analysis:' : 'Comparative Analysis:');
-                const analysisText = (data.difference_analysis_multilingual && data.difference_analysis_multilingual[state.lang]) || data.difference_analysis;
+                const shareUrl = `${window.location.origin}${window.location.pathname}#/thirukkural`;
 
                 area.innerHTML = `
                     <div class="compare-card">
-                        <div class="poem-ref-badge" style="margin-bottom:8px;">${k1Badge}</div>
-                        <div class="pure-verse-text" style="font-size:16px;">${k1Primary}</div>
-                        ${!isTamil ? `<div style="font-size:12px; color:var(--text-muted); margin-top:6px; font-style:italic;">Original Tamil: ${k1.text_tamil}</div>` : ''}
-                        <div style="font-size:13px; color:#1F2937; margin-top:8px;">${k1Exp}</div>
+                        <div class="poem-ref-badge" style="margin-bottom:8px;">குறள் ${data.kural_1.verse_number} (${data.kural_1.chapter_name})</div>
+                        <div class="pure-verse-text" style="font-size:16px;">${data.kural_1.text_tamil}</div>
+                        <div style="font-size:13px; color:#1F2937; margin-top:8px;">${data.kural_1.explanation_tamil}</div>
                     </div>
                     <div class="compare-card">
-                        <div class="poem-ref-badge" style="margin-bottom:8px;">${k2Badge}</div>
-                        <div class="pure-verse-text" style="font-size:16px;">${k2Primary}</div>
-                        ${!isTamil ? `<div style="font-size:12px; color:var(--text-muted); margin-top:6px; font-style:italic;">Original Tamil: ${k2.text_tamil}</div>` : ''}
-                        <div style="font-size:13px; color:#1F2937; margin-top:8px;">${k2Exp}</div>
+                        <div class="poem-ref-badge" style="margin-bottom:8px;">குறள் ${data.kural_2.verse_number} (${data.kural_2.chapter_name})</div>
+                        <div class="pure-verse-text" style="font-size:16px;">${data.kural_2.text_tamil}</div>
+                        <div style="font-size:13px; color:#1F2937; margin-top:8px;">${data.kural_2.explanation_tamil}</div>
                     </div>
                     <div class="compare-analysis">
-                        <strong>${analysisLabel}</strong><br>
-                        ${analysisText}
+                        <strong>ஒப்பீட்டு ஆய்வு / Difference Analysis:</strong><br>
+                        ${data.difference_analysis}
                     </div>
                 `;
             } catch (e) {
@@ -2845,23 +2574,16 @@
                         area.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-muted);">No bookmarks saved yet. Click 🔖 on any verse to save it!</div>';
                         return;
                     }
-                    const isTamil = state.lang === 'ta';
-                    area.innerHTML = data.bookmarks.map(b => {
-                        const title = getMultilingualField(b, 'title', state.lang);
-                        const verseText = getMultilingualField(b, 'content', state.lang);
-                        const meaningText = getMultilingualField(b, 'meaning', state.lang);
-                        return `
+                    area.innerHTML = data.bookmarks.map(b => `
                         <div class="poem-card">
                             <div class="poem-card-top">
-                                <span class="poem-ref-badge">${b.work} #${b.verse_number} (${title})</span>
+                                <span class="poem-ref-badge">${b.work} #${b.verse_number} (${b.chapter_name || ''})</span>
                                 <button style="background:none; border:none; color:red; cursor:pointer;" onclick="deleteBookmark('${b.verse_id}')">Remove ❌</button>
                             </div>
-                            <div class="pure-verse-text" style="font-size:16px;">${verseText}</div>
-                            ${!isTamil ? `<div style="font-size:12px; color:var(--text-muted); margin-top:6px; font-style:italic;">Original Tamil: ${b.text_tamil}</div>` : ''}
-                            <div class="poem-exp-tamil" style="margin-top:8px;">${meaningText}</div>
+                            <div class="pure-verse-text" style="font-size:16px;">${b.text_tamil}</div>
+                            <div class="poem-exp-tamil">${b.explanation_tamil || ''}</div>
                         </div>
-                        `;
-                    }).join('');
+                    `).join('');
                 } catch (e) {
                     area.innerHTML = '<div style="color:red;">Error loading bookmarks.</div>';
                 }

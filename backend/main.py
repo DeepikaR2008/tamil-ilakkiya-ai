@@ -28,8 +28,6 @@ from backend.engine import (
     answer_query,
     answer_poem_specific_query,
     get_db_connection,
-    search_corpus_hybrid,
-    make_citation,
     DB_PATH
 )
 from backend.auth import (
@@ -72,17 +70,7 @@ class QueryRequest(BaseModel):
     query: Optional[str] = None
     question: Optional[str] = None
     language: Optional[str] = "ta"
-    work: Optional[str] = None
     work_filter: Optional[str] = None
-    session_id: Optional[str] = None
-    top_k: Optional[int] = 5
-
-class RetrieveRequest(BaseModel):
-    query: Optional[str] = None
-    question: Optional[str] = None
-    work: Optional[str] = None
-    work_filter: Optional[str] = None
-    top_k: Optional[int] = 5
 
 class PoemQueryRequest(BaseModel):
     poem_id: str
@@ -126,82 +114,19 @@ def serve_index():
 # =====================================================================
 # 2. ASK-AI QUERY ENDPOINT (Contract §7.1)
 # =====================================================================
-@app.post("/query")
-def handle_query_strict(req: QueryRequest, user: Optional[Dict[str, Any]] = Depends(get_user_from_header)):
-    """
-    Standard Ask-AI Query Endpoint.
-    Strictly accepts ta, en, hi; rejects any other language with HTTP 400.
-    Strictly returns: {"supported": bool, "answer": str, "citations": list[str]}
-    """
-    if req.language not in ("ta", "en", "hi"):
-        raise HTTPException(status_code=400, detail="Invalid language. Supported languages: ta, en, hi")
-
-    raw_q = (req.question or req.query or "").strip()
-    wf = req.work or req.work_filter
-    top_k = req.top_k or 5
-
-    result = answer_query(
-        raw_q,
-        requested_lang=req.language,
-        work_filter=wf,
-        session_id=req.session_id,
-        top_k=top_k
-    )
-
-    # Save to user history if logged in
-    if user and raw_q:
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            ev = result.get("evidence") or {}
-            cursor.execute("""
-                INSERT INTO history (user_id, question, answer, citation, verse_id, work, confidence, language)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-            """, (
-                user["id"],
-                raw_q,
-                result.get("answer") or result.get("message") or "Abstained",
-                f"{ev.get('work', '')} #{ev.get('verse_number', '')}" if ev else None,
-                ev.get("verse_id"),
-                ev.get("work"),
-                ev.get("confidence", 0.0),
-                req.language
-            ))
-            conn.commit()
-            conn.close()
-        except Exception as e:
-            print(f"[!] Error saving history: {e}")
-
-    return {
-        "supported": result.get("supported", False),
-        "answer": result.get("answer", ""),
-        "citations": result.get("citations", [])
-    }
-
-
 @app.post("/api/query")
-def handle_query_api(req: QueryRequest, user: Optional[Dict[str, Any]] = Depends(get_user_from_header)):
+@app.post("/query")
+def handle_query(req: QueryRequest, user: Optional[Dict[str, Any]] = Depends(get_user_from_header)):
     """
-    Ask-AI endpoint for rich frontend UI.
-    Validates ta, en, hi; returns full object including evidence, palm-leaf motif metadata, and citations.
+    Core Ask-AI endpoint.
+    Retrieves evidence from the 7 works, performs confidence check,
+    and returns cited answer or honest abstention.
     """
-    if req.language not in ("ta", "en", "hi"):
-        raise HTTPException(status_code=400, detail="Invalid language. Supported languages: ta, en, hi")
-
-    raw_q = (req.question or req.query or "").strip()
-    wf = req.work or req.work_filter
-    top_k = req.top_k or 5
-
-    result = answer_query(
-        raw_q,
-        requested_lang=req.language,
-        work_filter=wf,
-        session_id=req.session_id,
-        top_k=top_k
-    )
+    raw_q = req.question or req.query or ""
+    result = answer_query(raw_q, requested_lang=req.language, work_filter=req.work_filter)
 
     # Save to user history if logged in
-    if user and raw_q:
+    if user and raw_q.strip():
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -211,13 +136,13 @@ def handle_query_api(req: QueryRequest, user: Optional[Dict[str, Any]] = Depends
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?);
             """, (
                 user["id"],
-                raw_q,
+                raw_q.strip(),
                 result.get("answer") or result.get("message") or "Abstained",
                 f"{ev.get('work', '')} #{ev.get('verse_number', '')}" if ev else None,
                 ev.get("verse_id"),
                 ev.get("work"),
                 ev.get("confidence", 0.0),
-                req.language
+                result.get("language", "ta")
             ))
             conn.commit()
             conn.close()
@@ -225,53 +150,6 @@ def handle_query_api(req: QueryRequest, user: Optional[Dict[str, Any]] = Depends
             print(f"[!] Error saving history: {e}")
 
     return result
-
-
-@app.get("/retrieve")
-@app.post("/retrieve")
-def handle_retrieve(
-    req: Optional[RetrieveRequest] = None,
-    query: Optional[str] = Query(None),
-    question: Optional[str] = Query(None),
-    work: Optional[str] = Query(None),
-    top_k: int = Query(5)
-):
-    """
-    Standalone RAG retrieval endpoint.
-    Retrieves top literature candidates with confidence scores and canonical citations.
-    """
-    q = ""
-    target_work = None
-    k = top_k
-    if req:
-        q = (req.question or req.query or "").strip()
-        target_work = req.work or req.work_filter
-        if req.top_k:
-            k = req.top_k
-    if not q:
-        q = (question or query or "").strip()
-        if work:
-            target_work = work
-
-    if not q:
-        return {"query": "", "results": []}
-
-    scored = search_corpus_hybrid(q, work_filter=target_work, top_k=k)
-    results = []
-    for rec, conf, reason in scored:
-        results.append({
-            "verse_id": rec["id"],
-            "work": rec["work"],
-            "chapter_name": rec.get("chapter_name"),
-            "verse_number": rec.get("verse_number"),
-            "text_tamil": rec.get("text_tamil"),
-            "explanation_tamil": rec.get("explanation_tamil"),
-            "explanation_english": rec.get("explanation_english"),
-            "citation": make_citation(rec["work"], rec.get("verse_number")),
-            "confidence": conf,
-            "reason": reason
-        })
-    return {"query": q, "results": results}
 
 
 @app.post("/api/poem-query")
@@ -306,7 +184,6 @@ def handle_poem_query(req: PoemQueryRequest, user: Optional[Dict[str, Any]] = De
 # =====================================================================
 # 3. LITERATURE EXPLORER & WORKS API (Page 2 & Page 3)
 # =====================================================================
-@app.get("/works")
 @app.get("/api/literature/works")
 def get_canonical_works():
     """Returns the 7 canonical works grouped into Sangam Literature & Epics."""
@@ -343,87 +220,6 @@ def get_canonical_works():
     }
 
 
-def format_multilingual_record(r: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Standardizes each literature verse into the required multilingual schema:
-    {
-      id, work, verse_number,
-      title: {ta, en, hi},
-      content: {ta, en, hi},
-      meaning: {ta, en, hi},
-      author: {ta, en, hi},
-      kural: {ta, en, hi},
-      explanation: {ta, en, hi}
-    }
-    """
-    if not r:
-        return {}
-    work = r.get("work", "")
-    vnum = r.get("verse_number")
-    ch_ta = r.get("chapter_name") or r.get("section") or f"{work} #{vnum}"
-    ch_en = r.get("title_english") or f"{work} #{vnum}"
-    ch_hi = r.get("title_hindi") or f"{work} #{vnum}"
-
-    text_ta = r.get("text_tamil") or ""
-    text_en = r.get("text_english") or r.get("explanation_english") or "English translation unavailable"
-    text_hi = r.get("text_hindi") or r.get("explanation_hindi") or "हिन्दी अनुवाद उपलब्ध नहीं है"
-
-    exp_ta = r.get("explanation_tamil") or ""
-    exp_en = r.get("explanation_english") or "English explanation unavailable"
-    exp_hi = r.get("explanation_hindi") or "हिन्दी भावार्थ उपलब्ध नहीं है"
-
-    poet_ta = r.get("poet") or ("திருவள்ளுவர்" if work == "Thirukkural" else "சங்கப் புலவர்")
-    poet_en = r.get("poet_english") or ("Thiruvalluvar" if work == "Thirukkural" else "Classical Poet")
-    poet_hi = r.get("poet_hindi") or ("तिरुवल्लुवर" if work == "Thirukkural" else "शास्त्रीय कवि")
-
-    sec_ta = r.get("section") or ""
-    sec_en = r.get("section_english") or sec_ta
-    sec_hi = r.get("section_hindi") or sec_ta
-
-    d = dict(r)
-    d["id"] = r.get("id")
-    d["work"] = work
-    d["verse_number"] = vnum
-    d["chapter_number"] = r.get("chapter_number")
-    d["kuralNumber"] = vnum if work == "Thirukkural" else None
-    d["title"] = {
-        "ta": ch_ta,
-        "en": ch_en,
-        "hi": ch_hi
-    }
-    d["content"] = {
-        "ta": text_ta,
-        "en": text_en,
-        "hi": text_hi
-    }
-    d["kural"] = {
-        "ta": text_ta,
-        "en": text_en,
-        "hi": text_hi
-    }
-    d["meaning"] = {
-        "ta": exp_ta,
-        "en": exp_en,
-        "hi": exp_hi
-    }
-    d["explanation"] = {
-        "ta": exp_ta,
-        "en": exp_en,
-        "hi": exp_hi
-    }
-    d["author"] = {
-        "ta": poet_ta,
-        "en": poet_en,
-        "hi": poet_hi
-    }
-    d["section_info"] = {
-        "ta": sec_ta,
-        "en": sec_en,
-        "hi": sec_hi
-    }
-    return d
-
-
 @app.get("/api/literature/poems")
 def list_poems(
     work: Optional[str] = Query(None),
@@ -431,7 +227,7 @@ def list_poems(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0)
 ):
-    """Browses poems across all 7 works with clean multilingual text and explanations."""
+    """Browses poems across all 7 works with clean Tamil text and explanations."""
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -444,12 +240,8 @@ def list_poems(
 
     if search and search.strip():
         kw = f"%{search.strip().lower()}%"
-        conditions.append(
-            "(search_tokens LIKE ? OR text_tamil LIKE ? OR text_english LIKE ? OR text_hindi LIKE ? "
-            "OR title_english LIKE ? OR title_hindi LIKE ? OR chapter_name LIKE ? "
-            "OR explanation_tamil LIKE ? OR explanation_english LIKE ? OR explanation_hindi LIKE ?)"
-        )
-        params.extend([kw, kw, kw, kw, kw, kw, kw, kw, kw, kw])
+        conditions.append("(search_tokens LIKE ? OR text_tamil LIKE ? OR chapter_name LIKE ?)")
+        params.extend([kw, kw, kw])
 
     where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
 
@@ -457,9 +249,11 @@ def list_poems(
     cursor.execute(f"SELECT COUNT(*) FROM literature_corpus {where_clause};", params)
     total_count = cursor.fetchone()[0]
 
-    # Fetch paginated items with all columns
+    # Fetch paginated items
     sql = f"""
-        SELECT *
+        SELECT id, work, group_name, section, chapter_number, chapter_name,
+               verse_number, poet, text_tamil, text_transliteration,
+               explanation_tamil, explanation_english, theme
         FROM literature_corpus
         {where_clause}
         ORDER BY work, verse_number ASC
@@ -473,13 +267,13 @@ def list_poems(
         "total": total_count,
         "limit": limit,
         "offset": offset,
-        "poems": [format_multilingual_record(dict(r)) for r in rows]
+        "poems": [dict(r) for r in rows]
     }
 
 
 @app.get("/api/literature/poem/{poem_id}")
 def get_poem_by_id(poem_id: str):
-    """Fetches a single poem with full citation, multilingual text, and context."""
+    """Fetches a single poem with full citation and context."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM literature_corpus WHERE id = ? LIMIT 1;", (poem_id,))
@@ -487,7 +281,7 @@ def get_poem_by_id(poem_id: str):
     conn.close()
     if not row:
         raise HTTPException(status_code=404, detail="Poem not found")
-    return format_multilingual_record(dict(row))
+    return dict(row)
 
 
 # =====================================================================
@@ -495,12 +289,11 @@ def get_poem_by_id(poem_id: str):
 # =====================================================================
 @app.get("/api/literature/thirukkural/chapters")
 def get_thirukkural_chapters():
-    """Returns all 133 Adhikarams grouped by Paal with Tamil, English, and Hindi titles."""
+    """Returns all 133 Adhikarams grouped by Paal."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT DISTINCT chapter_number, chapter_name, title_english, title_hindi,
-               section, section_english, section_hindi,
+        SELECT DISTINCT chapter_number, chapter_name, section,
                MIN(verse_number) as start_kural,
                MAX(verse_number) as end_kural
         FROM literature_corpus
@@ -514,57 +307,23 @@ def get_thirukkural_chapters():
     paals = {"அறத்துப்பால்": [], "பொருட்பால்": [], "காமத்துப்பால்": []}
     for r in rows:
         sec = r["section"] or "அறத்துப்பால்"
-        item = {
-            "chapter_number": r["chapter_number"],
-            "chapter_name": r["chapter_name"],
-            "title_english": r["title_english"] or r["chapter_name"],
-            "title_hindi": r["title_hindi"] or r["chapter_name"],
-            "section": r["section"],
-            "section_english": r["section_english"] or "Virtue",
-            "section_hindi": r["section_hindi"] or "धर्म",
-            "start_kural": r["start_kural"],
-            "end_kural": r["end_kural"],
-            "title": {
-                "ta": r["chapter_name"],
-                "en": r["title_english"] or r["chapter_name"],
-                "hi": r["title_hindi"] or r["chapter_name"]
-            }
-        }
         if sec in paals:
-            paals[sec].append(item)
+            paals[sec].append(dict(r))
         else:
-            paals["அறத்துப்பால்"].append(item)
+            paals["அறத்துப்பால்"].append(dict(r))
 
     return {
         "sections": [
-            {
-                "paal": "அறத்துப்பால்",
-                "paal_en": "Aram (Virtue)",
-                "paal_hi": "धर्म (अरम)",
-                "count": len(paals["அறத்துப்பால்"]),
-                "chapters": paals["அறத்துப்பால்"]
-            },
-            {
-                "paal": "பொருட்பால்",
-                "paal_en": "Porul (Wealth & Politics)",
-                "paal_hi": "अर्थ व नीति (पोरुल)",
-                "count": len(paals["பொருட்பால்"]),
-                "chapters": paals["பொருட்பால்"]
-            },
-            {
-                "paal": "காமத்துப்பால்",
-                "paal_en": "Inbam (Love & Emotion)",
-                "paal_hi": "प्रेम (इनबम)",
-                "count": len(paals["காமத்துப்பால்"]),
-                "chapters": paals["காமத்துப்பால்"]
-            }
+            {"paal": "அறத்துப்பால்", "paal_en": "Aram (Virtue)", "count": len(paals["அறத்துப்பால்"]), "chapters": paals["அறத்துப்பால்"]},
+            {"paal": "பொருட்பால்", "paal_en": "Porul (Wealth & Politics)", "count": len(paals["பொருட்பால்"]), "chapters": paals["பொருட்பால்"]},
+            {"paal": "காமத்துப்பால்", "paal_en": "Inbam (Love & Emotion)", "count": len(paals["காமத்துப்பால்"]), "chapters": paals["காமத்துப்பால்"]}
         ]
     }
 
 
 @app.get("/api/literature/thirukkural/chapter/{chapter_number}")
 def get_kurals_by_chapter(chapter_number: int):
-    """Returns the 10 Kurals for a given Adhikaram in multilingual format."""
+    """Returns the 10 Kurals for a given Adhikaram."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
@@ -574,53 +333,35 @@ def get_kurals_by_chapter(chapter_number: int):
     """, (chapter_number,))
     rows = cursor.fetchall()
     conn.close()
-    return {
-        "chapter_number": chapter_number,
-        "kurals": [format_multilingual_record(dict(r)) for r in rows]
-    }
+    return {"chapter_number": chapter_number, "kurals": [dict(r) for r in rows]}
 
 
 @app.get("/api/literature/thirukkural/compare")
 def compare_kurals(kural1: int = Query(1), kural2: int = Query(391)):
-    """Side-by-side comparison tool for two Kurals with multilingual analysis."""
+    """Side-by-side comparison tool for two Kurals."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM literature_corpus WHERE work = 'Thirukkural' AND verse_number IN (?, ?);", (kural1, kural2))
     rows = cursor.fetchall()
     conn.close()
 
-    map_k = {r["verse_number"]: format_multilingual_record(dict(r)) for r in rows}
+    map_k = {r["verse_number"]: dict(r) for r in rows}
     k1 = map_k.get(kural1)
     k2 = map_k.get(kural2)
 
     if not k1 or not k2:
         raise HTTPException(status_code=404, detail="One or both Kural numbers not found.")
 
-    diff_ta = (
-        f"குறள் {k1['verse_number']} ({k1['title']['ta']}) '{k1['section_info']['ta']}' நெறியிலும், "
-        f"குறள் {k2['verse_number']} ({k2['title']['ta']}) '{k2['section_info']['ta']}' நெறியிலும் அமைந்தவை. "
+    diff_analysis = (
+        f"குறள் {k1['verse_number']} ({k1['chapter_name']}) '{k1['section']}' நெறியிலும், "
+        f"குறள் {k2['verse_number']} ({k2['chapter_name']}) '{k2['section']}' நெறியிலும் அமைந்தவை. "
         f"இரண்டும் திருவள்ளுவரின் ஆழமான வாழ்வியல் பார்வையின் வெவ்வேறு பரிமாணங்களை விளக்குகின்றன."
-    )
-    diff_en = (
-        f"Kural #{k1['verse_number']} ({k1['title']['en']}) reflects '{k1['section_info']['en']}', whereas "
-        f"Kural #{k2['verse_number']} ({k2['title']['en']}) reflects '{k2['section_info']['en']}'. "
-        f"Both illustrate complementary aspects of Thiruvalluvar's ethical and practical philosophy."
-    )
-    diff_hi = (
-        f"कुरल #{k1['verse_number']} ({k1['title']['hi']}) '{k1['section_info']['hi']}' के अंतर्गत है, जबकि "
-        f"कुरल #{k2['verse_number']} ({k2['title']['hi']}) '{k2['section_info']['hi']}' के अंतर्गत आता है। "
-        f"दोनों पद मिलकर जीवन के विभिन्न नैतिक व व्यावहारिक आयामों पर प्रकाश डालते हैं।"
     )
 
     return {
         "kural_1": k1,
         "kural_2": k2,
-        "difference_analysis": diff_ta,
-        "difference_analysis_multilingual": {
-            "ta": diff_ta,
-            "en": diff_en,
-            "hi": diff_hi
-        }
+        "difference_analysis": diff_analysis
     }
 
 
@@ -730,8 +471,8 @@ def get_bookmarks(user: Optional[Dict[str, Any]] = Depends(get_user_from_header)
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT b.id as bookmark_id, b.verse_id, b.work, b.verse_number, b.created_at,
-               c.*
+        SELECT b.id, b.verse_id, b.work, b.verse_number, b.created_at,
+               c.text_tamil, c.explanation_tamil, c.explanation_english, c.chapter_name
         FROM bookmarks b
         LEFT JOIN literature_corpus c ON b.verse_id = c.id
         WHERE b.user_id = ?
@@ -739,16 +480,7 @@ def get_bookmarks(user: Optional[Dict[str, Any]] = Depends(get_user_from_header)
     """, (user["id"],))
     rows = cursor.fetchall()
     conn.close()
-
-    formatted_bookmarks = []
-    for r in rows:
-        d = format_multilingual_record(dict(r))
-        d["id"] = r["bookmark_id"]
-        d["verse_id"] = r["verse_id"]
-        d["created_at"] = r["created_at"]
-        formatted_bookmarks.append(d)
-
-    return {"bookmarks": formatted_bookmarks}
+    return {"bookmarks": [dict(r) for r in rows]}
 
 
 @app.delete("/api/user/bookmarks/{verse_id}")

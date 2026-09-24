@@ -1,0 +1,52 @@
+[
+  {
+    "work": "Thirukkural",
+    "chapter": "Aram",
+    "verse_number": 1,
+    "verse_id": "thirukkural_001",
+    "text_tamil": "அகர முதல எழுத்தெல்லாம் ஆதி பகவன் முதற்றே உலகு",
+    "text_transliteration": "Agaramudha ezhuththellam aadhi bhagavan mudhatre ulagu",
+    "meaning_english": "As the letter A is the first of all letters, so the Eternal is first in the world.",
+    "source_type": "classical_text"
+  },
+  {
+    "work": "Thirukkural",
+    "chapter": "Aram",
+    "verse_number": 2,
+    "verse_id": "thirukkural_002",
+    "text_tamil": "கற்றதனால் ஆய பயனென்கொல் வாலறிவன் நற்றாள் தொழாஅர் எனின்",
+    "text_transliteration": "Katradhanal aaya payanen kol vaalarivan natrraal thozhaar enin",
+    "meaning_english": "What benefit is there from learning if one does not worship the feet of the wise?",
+    "source_type": "classical_text"
+  },
+  {
+    "work": "Thirukkural",
+    "chapter": "Aram",
+    "verse_number": 3,
+    "verse_id": "thirukkural_003",
+    "text_tamil": "மலர்மிசை ஏகினான் மாணடி சேர்ந்தார் நிலமிசை நீடுவாழ் வார்",
+    "text_transliteration": "Malarmisai yeginan maanadi serndhaar nilamisai needuvaazh vaar",
+    "meaning_english": "Those who reach the feet of Him who dwells on the flower will live long upon the earth.",
+    "source_type": "classical_text"
+  },
+  {
+    "work": "Thirukkural",
+    "chapter": "Aram",
+    "verse_number": 4,
+    "verse_id": "thirukkural_004",
+    "text_tamil": "வேண்டுதல் வேண்டாமை இலானடி சேர்ந்தார்க்கு யாண்டும் இடும்பை இல",
+    "text_transliteration": "Vendudhal vendaamai ilaanadi serndhaarkku yaandum idumbai ila",
+    "meaning_english": "Those who reach the feet of Him who is free from desire and aversion are free from suffering.",
+    "source_type": "classical_text"
+  },
+  {
+    "work": "Thirukkural",
+    "chapter": "Aram",
+    "verse_number": 5,
+    "verse_id": "thirukkural_005",
+    "text_tamil": "இருள்சேர் இருவினையும் சேரா இறைவன் பொருள்சேர் புகழ்புரிந்தார் மாட்டு",
+    "text_transliteration": "Irulser iruvinaiyum sera iraivan porulser pugazh purindhaar maattu",
+    "meaning_english": "The two kinds of deeds that cause darkness do not cling to those who praise the Lord.",
+    "source_type": "classical_text"
+  }
+]
