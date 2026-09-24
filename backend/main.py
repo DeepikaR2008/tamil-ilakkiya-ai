@@ -343,6 +343,87 @@ def get_canonical_works():
     }
 
 
+def format_multilingual_record(r: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Standardizes each literature verse into the required multilingual schema:
+    {
+      id, work, verse_number,
+      title: {ta, en, hi},
+      content: {ta, en, hi},
+      meaning: {ta, en, hi},
+      author: {ta, en, hi},
+      kural: {ta, en, hi},
+      explanation: {ta, en, hi}
+    }
+    """
+    if not r:
+        return {}
+    work = r.get("work", "")
+    vnum = r.get("verse_number")
+    ch_ta = r.get("chapter_name") or r.get("section") or f"{work} #{vnum}"
+    ch_en = r.get("title_english") or f"{work} #{vnum}"
+    ch_hi = r.get("title_hindi") or f"{work} #{vnum}"
+
+    text_ta = r.get("text_tamil") or ""
+    text_en = r.get("text_english") or r.get("explanation_english") or "English translation unavailable"
+    text_hi = r.get("text_hindi") or r.get("explanation_hindi") or "हिन्दी अनुवाद उपलब्ध नहीं है"
+
+    exp_ta = r.get("explanation_tamil") or ""
+    exp_en = r.get("explanation_english") or "English explanation unavailable"
+    exp_hi = r.get("explanation_hindi") or "हिन्दी भावार्थ उपलब्ध नहीं है"
+
+    poet_ta = r.get("poet") or ("திருவள்ளுவர்" if work == "Thirukkural" else "சங்கப் புலவர்")
+    poet_en = r.get("poet_english") or ("Thiruvalluvar" if work == "Thirukkural" else "Classical Poet")
+    poet_hi = r.get("poet_hindi") or ("तिरुवल्लुवर" if work == "Thirukkural" else "शास्त्रीय कवि")
+
+    sec_ta = r.get("section") or ""
+    sec_en = r.get("section_english") or sec_ta
+    sec_hi = r.get("section_hindi") or sec_ta
+
+    d = dict(r)
+    d["id"] = r.get("id")
+    d["work"] = work
+    d["verse_number"] = vnum
+    d["chapter_number"] = r.get("chapter_number")
+    d["kuralNumber"] = vnum if work == "Thirukkural" else None
+    d["title"] = {
+        "ta": ch_ta,
+        "en": ch_en,
+        "hi": ch_hi
+    }
+    d["content"] = {
+        "ta": text_ta,
+        "en": text_en,
+        "hi": text_hi
+    }
+    d["kural"] = {
+        "ta": text_ta,
+        "en": text_en,
+        "hi": text_hi
+    }
+    d["meaning"] = {
+        "ta": exp_ta,
+        "en": exp_en,
+        "hi": exp_hi
+    }
+    d["explanation"] = {
+        "ta": exp_ta,
+        "en": exp_en,
+        "hi": exp_hi
+    }
+    d["author"] = {
+        "ta": poet_ta,
+        "en": poet_en,
+        "hi": poet_hi
+    }
+    d["section_info"] = {
+        "ta": sec_ta,
+        "en": sec_en,
+        "hi": sec_hi
+    }
+    return d
+
+
 @app.get("/api/literature/poems")
 def list_poems(
     work: Optional[str] = Query(None),
@@ -350,7 +431,7 @@ def list_poems(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0)
 ):
-    """Browses poems across all 7 works with clean Tamil text and explanations."""
+    """Browses poems across all 7 works with clean multilingual text and explanations."""
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -363,8 +444,12 @@ def list_poems(
 
     if search and search.strip():
         kw = f"%{search.strip().lower()}%"
-        conditions.append("(search_tokens LIKE ? OR text_tamil LIKE ? OR chapter_name LIKE ?)")
-        params.extend([kw, kw, kw])
+        conditions.append(
+            "(search_tokens LIKE ? OR text_tamil LIKE ? OR text_english LIKE ? OR text_hindi LIKE ? "
+            "OR title_english LIKE ? OR title_hindi LIKE ? OR chapter_name LIKE ? "
+            "OR explanation_tamil LIKE ? OR explanation_english LIKE ? OR explanation_hindi LIKE ?)"
+        )
+        params.extend([kw, kw, kw, kw, kw, kw, kw, kw, kw, kw])
 
     where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
 
@@ -372,11 +457,9 @@ def list_poems(
     cursor.execute(f"SELECT COUNT(*) FROM literature_corpus {where_clause};", params)
     total_count = cursor.fetchone()[0]
 
-    # Fetch paginated items
+    # Fetch paginated items with all columns
     sql = f"""
-        SELECT id, work, group_name, section, chapter_number, chapter_name,
-               verse_number, poet, text_tamil, text_transliteration,
-               explanation_tamil, explanation_english, theme
+        SELECT *
         FROM literature_corpus
         {where_clause}
         ORDER BY work, verse_number ASC
@@ -390,13 +473,13 @@ def list_poems(
         "total": total_count,
         "limit": limit,
         "offset": offset,
-        "poems": [dict(r) for r in rows]
+        "poems": [format_multilingual_record(dict(r)) for r in rows]
     }
 
 
 @app.get("/api/literature/poem/{poem_id}")
 def get_poem_by_id(poem_id: str):
-    """Fetches a single poem with full citation and context."""
+    """Fetches a single poem with full citation, multilingual text, and context."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM literature_corpus WHERE id = ? LIMIT 1;", (poem_id,))
@@ -404,7 +487,7 @@ def get_poem_by_id(poem_id: str):
     conn.close()
     if not row:
         raise HTTPException(status_code=404, detail="Poem not found")
-    return dict(row)
+    return format_multilingual_record(dict(row))
 
 
 # =====================================================================
@@ -412,11 +495,12 @@ def get_poem_by_id(poem_id: str):
 # =====================================================================
 @app.get("/api/literature/thirukkural/chapters")
 def get_thirukkural_chapters():
-    """Returns all 133 Adhikarams grouped by Paal."""
+    """Returns all 133 Adhikarams grouped by Paal with Tamil, English, and Hindi titles."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT DISTINCT chapter_number, chapter_name, section,
+        SELECT DISTINCT chapter_number, chapter_name, title_english, title_hindi,
+               section, section_english, section_hindi,
                MIN(verse_number) as start_kural,
                MAX(verse_number) as end_kural
         FROM literature_corpus
@@ -430,23 +514,57 @@ def get_thirukkural_chapters():
     paals = {"அறத்துப்பால்": [], "பொருட்பால்": [], "காமத்துப்பால்": []}
     for r in rows:
         sec = r["section"] or "அறத்துப்பால்"
+        item = {
+            "chapter_number": r["chapter_number"],
+            "chapter_name": r["chapter_name"],
+            "title_english": r["title_english"] or r["chapter_name"],
+            "title_hindi": r["title_hindi"] or r["chapter_name"],
+            "section": r["section"],
+            "section_english": r["section_english"] or "Virtue",
+            "section_hindi": r["section_hindi"] or "धर्म",
+            "start_kural": r["start_kural"],
+            "end_kural": r["end_kural"],
+            "title": {
+                "ta": r["chapter_name"],
+                "en": r["title_english"] or r["chapter_name"],
+                "hi": r["title_hindi"] or r["chapter_name"]
+            }
+        }
         if sec in paals:
-            paals[sec].append(dict(r))
+            paals[sec].append(item)
         else:
-            paals["அறத்துப்பால்"].append(dict(r))
+            paals["அறத்துப்பால்"].append(item)
 
     return {
         "sections": [
-            {"paal": "அறத்துப்பால்", "paal_en": "Aram (Virtue)", "count": len(paals["அறத்துப்பால்"]), "chapters": paals["அறத்துப்பால்"]},
-            {"paal": "பொருட்பால்", "paal_en": "Porul (Wealth & Politics)", "count": len(paals["பொருட்பால்"]), "chapters": paals["பொருட்பால்"]},
-            {"paal": "காமத்துப்பால்", "paal_en": "Inbam (Love & Emotion)", "count": len(paals["காமத்துப்பால்"]), "chapters": paals["காமத்துப்பால்"]}
+            {
+                "paal": "அறத்துப்பால்",
+                "paal_en": "Aram (Virtue)",
+                "paal_hi": "धर्म (अरम)",
+                "count": len(paals["அறத்துப்பால்"]),
+                "chapters": paals["அறத்துப்பால்"]
+            },
+            {
+                "paal": "பொருட்பால்",
+                "paal_en": "Porul (Wealth & Politics)",
+                "paal_hi": "अर्थ व नीति (पोरुल)",
+                "count": len(paals["பொருட்பால்"]),
+                "chapters": paals["பொருட்பால்"]
+            },
+            {
+                "paal": "காமத்துப்பால்",
+                "paal_en": "Inbam (Love & Emotion)",
+                "paal_hi": "प्रेम (इनबम)",
+                "count": len(paals["காமத்துப்பால்"]),
+                "chapters": paals["காமத்துப்பால்"]
+            }
         ]
     }
 
 
 @app.get("/api/literature/thirukkural/chapter/{chapter_number}")
 def get_kurals_by_chapter(chapter_number: int):
-    """Returns the 10 Kurals for a given Adhikaram."""
+    """Returns the 10 Kurals for a given Adhikaram in multilingual format."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
@@ -456,35 +574,53 @@ def get_kurals_by_chapter(chapter_number: int):
     """, (chapter_number,))
     rows = cursor.fetchall()
     conn.close()
-    return {"chapter_number": chapter_number, "kurals": [dict(r) for r in rows]}
+    return {
+        "chapter_number": chapter_number,
+        "kurals": [format_multilingual_record(dict(r)) for r in rows]
+    }
 
 
 @app.get("/api/literature/thirukkural/compare")
 def compare_kurals(kural1: int = Query(1), kural2: int = Query(391)):
-    """Side-by-side comparison tool for two Kurals."""
+    """Side-by-side comparison tool for two Kurals with multilingual analysis."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM literature_corpus WHERE work = 'Thirukkural' AND verse_number IN (?, ?);", (kural1, kural2))
     rows = cursor.fetchall()
     conn.close()
 
-    map_k = {r["verse_number"]: dict(r) for r in rows}
+    map_k = {r["verse_number"]: format_multilingual_record(dict(r)) for r in rows}
     k1 = map_k.get(kural1)
     k2 = map_k.get(kural2)
 
     if not k1 or not k2:
         raise HTTPException(status_code=404, detail="One or both Kural numbers not found.")
 
-    diff_analysis = (
-        f"குறள் {k1['verse_number']} ({k1['chapter_name']}) '{k1['section']}' நெறியிலும், "
-        f"குறள் {k2['verse_number']} ({k2['chapter_name']}) '{k2['section']}' நெறியிலும் அமைந்தவை. "
+    diff_ta = (
+        f"குறள் {k1['verse_number']} ({k1['title']['ta']}) '{k1['section_info']['ta']}' நெறியிலும், "
+        f"குறள் {k2['verse_number']} ({k2['title']['ta']}) '{k2['section_info']['ta']}' நெறியிலும் அமைந்தவை. "
         f"இரண்டும் திருவள்ளுவரின் ஆழமான வாழ்வியல் பார்வையின் வெவ்வேறு பரிமாணங்களை விளக்குகின்றன."
+    )
+    diff_en = (
+        f"Kural #{k1['verse_number']} ({k1['title']['en']}) reflects '{k1['section_info']['en']}', whereas "
+        f"Kural #{k2['verse_number']} ({k2['title']['en']}) reflects '{k2['section_info']['en']}'. "
+        f"Both illustrate complementary aspects of Thiruvalluvar's ethical and practical philosophy."
+    )
+    diff_hi = (
+        f"कुरल #{k1['verse_number']} ({k1['title']['hi']}) '{k1['section_info']['hi']}' के अंतर्गत है, जबकि "
+        f"कुरल #{k2['verse_number']} ({k2['title']['hi']}) '{k2['section_info']['hi']}' के अंतर्गत आता है। "
+        f"दोनों पद मिलकर जीवन के विभिन्न नैतिक व व्यावहारिक आयामों पर प्रकाश डालते हैं।"
     )
 
     return {
         "kural_1": k1,
         "kural_2": k2,
-        "difference_analysis": diff_analysis
+        "difference_analysis": diff_ta,
+        "difference_analysis_multilingual": {
+            "ta": diff_ta,
+            "en": diff_en,
+            "hi": diff_hi
+        }
     }
 
 
@@ -594,8 +730,8 @@ def get_bookmarks(user: Optional[Dict[str, Any]] = Depends(get_user_from_header)
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT b.id, b.verse_id, b.work, b.verse_number, b.created_at,
-               c.text_tamil, c.explanation_tamil, c.explanation_english, c.chapter_name
+        SELECT b.id as bookmark_id, b.verse_id, b.work, b.verse_number, b.created_at,
+               c.*
         FROM bookmarks b
         LEFT JOIN literature_corpus c ON b.verse_id = c.id
         WHERE b.user_id = ?
@@ -603,7 +739,16 @@ def get_bookmarks(user: Optional[Dict[str, Any]] = Depends(get_user_from_header)
     """, (user["id"],))
     rows = cursor.fetchall()
     conn.close()
-    return {"bookmarks": [dict(r) for r in rows]}
+
+    formatted_bookmarks = []
+    for r in rows:
+        d = format_multilingual_record(dict(r))
+        d["id"] = r["bookmark_id"]
+        d["verse_id"] = r["verse_id"]
+        d["created_at"] = r["created_at"]
+        formatted_bookmarks.append(d)
+
+    return {"bookmarks": formatted_bookmarks}
 
 
 @app.delete("/api/user/bookmarks/{verse_id}")
